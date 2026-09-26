@@ -1,0 +1,151 @@
+{
+  "round_id": "round-001",
+  "status": "verified",
+  "mode": "replay",
+  "chain": "solana",
+  "cutoff": "2026-08-20T00:00:00Z",
+  "horizon_days": 7,
+  "candle_interval": "1h",
+  "resolution_time": "2026-08-27T00:00:00Z",
+  "round_forge_version": 1,
+  "clue_schema_version": 1,
+  "price_policy_version": 1,
+  "eligibility_policy": {
+    "chain": "solana",
+    "exclude_sectors": ["Stablecoin"],
+    "liquidity_usd_min": 2000000,
+    "token_age_days_min": 30,
+    "market_cap_usd_band": [40000000, 100000000],
+    "sector_tag_required": ["Memecoins"],
+    "sort": "liquidity_desc_top_3",
+    "slot_assignment": "token_address_ascending"
+  },
+  "data_source": {
+    "provider": "Nansen API",
+    "discovery_endpoint": "POST /api/v1beta1/token-screener/historical",
+    "outcome_endpoint": "POST /api/v1beta1/tgm/historical-token-ohlcv",
+    "attribution_required": true,
+    "redistribution_status": "allowed_with_attribution"
+  },
+  "assets": [
+    {
+      "slot": "A",
+      "token_symbol": "POPCAT",
+      "token_address": "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
+      "sectors": ["Memecoins"],
+      "clue_inputs": {
+        "buy_volume_1d": 283495.1020966354,
+        "sell_volume_1d": 259846.46665626526,
+        "volume_1d": 543341.5687529007,
+        "volume_7d": 1128853.6497759006,
+        "netflow_1d": 23648.635440370126,
+        "liquidity_usd": 4869692.689133946,
+        "price_change_7d": 0.0712165078343695,
+        "market_cap_usd": 45979350.2999064,
+        "token_age_days": 982
+      },
+      "clues": {
+        "buy_sell_balance": { "value": 0.0435, "bucket": "balanced" },
+        "trading_acceleration": { "value": 3.369, "bucket": "accelerating" },
+        "netflow_over_liquidity": { "value": 0.0049, "bucket": "balanced" },
+        "recent_momentum": { "value": 0.0712, "bucket": "rising" }
+      },
+      "price": {
+        "entry_candle_start": "2026-08-19T23:00:00Z",
+        "entry_close": 0.04301576711450214,
+        "exit_candle_start": "2026-08-26T23:00:00Z",
+        "exit_close": 0.05943781587754146
+      },
+      "return": 0.3817681251464389,
+      "source_response_sha256": {
+        "discovery_7d": "a6bfea94c602f813c32ae321b395b6629ad5c7111865fb9c9192c02c34b0c0f8",
+        "discovery_1d": "9b17bb6d06142ec0bc47acd60ce82d6242cfab51a080b6d9259a546a5535d5fb",
+        "ohlcv": "b8265601119856c811a42f4841f6e7fcb6f25a8e8e9006910ec669bec40a6701"
+      }
+    },
+    {
+      "slot": "B",
+      "token_symbol": "YZY",
+      "token_address": "DrZ26cKJDksVRWib3DVVsjo9eeXccc7hKhDJviiYEEZY",
+      "sectors": ["Memecoins"],
+      "clue_inputs": {
+        "buy_volume_1d": 688.2567843711454,
+        "sell_volume_1d": 1555.8831112027312,
+        "volume_1d": 2244.139895573877,
+        "volume_7d": 13277.647988978002,
+        "netflow_1d": -867.6263268315859,
+        "liquidity_usd": 6317801.234732163,
+        "price_change_7d": -0.01974290799128955,
+        "market_cap_usd": 87918156,
+        "token_age_days": 368
+      },
+      "clues": {
+        "buy_sell_balance": { "value": -0.3866, "bucket": "sell-heavy" },
+        "trading_acceleration": { "value": 1.183, "bucket": "steady" },
+        "netflow_over_liquidity": { "value": -0.0001, "bucket": "balanced" },
+        "recent_momentum": { "value": -0.0197, "bucket": "flat" }
+      },
+      "price": {
+        "entry_candle_start": "2026-08-19T23:00:00Z",
+        "entry_close": 0.28814116434640574,
+        "exit_candle_start": "2026-08-26T23:00:00Z",
+        "exit_close": 0.29410094634471007
+      },
+      "return": 0.02068354937005612,
+      "source_response_sha256": {
+        "discovery_7d": "a6bfea94c602f813c32ae321b395b6629ad5c7111865fb9c9192c02c34b0c0f8",
+        "discovery_1d": "9b17bb6d06142ec0bc47acd60ce82d6242cfab51a080b6d9259a546a5535d5fb",
+        "ohlcv": "2916ffb4dd82c0956182816b3df8c36bb6429585b0d7390cfcf56699506bacc5"
+      }
+    },
+    {
+      "slot": "C",
+      "token_symbol": "BOME",
+      "token_address": "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
+      "sectors": ["Memecoins"],
+      "clue_inputs": {
+        "buy_volume_1d": 12163514.619286997,
+        "sell_volume_1d": 11582676.046839809,
+        "volume_1d": 23746190.666126806,
+        "volume_7d": 36172279.86729699,
+        "netflow_1d": 580838.5724471882,
+        "liquidity_usd": 8249379.38120899,
+        "price_change_7d": 0.480332761839598,
+        "market_cap_usd": 81401739.661531,
+        "token_age_days": 892
+      },
+      "clues": {
+        "buy_sell_balance": { "value": 0.0245, "bucket": "balanced" },
+        "trading_acceleration": { "value": 4.595, "bucket": "accelerating" },
+        "netflow_over_liquidity": { "value": 0.0704, "bucket": "inward" },
+        "recent_momentum": { "value": 0.4803, "bucket": "rising" }
+      },
+      "price": {
+        "entry_candle_start": "2026-08-19T23:00:00Z",
+        "entry_close": 0.0008755176038674171,
+        "exit_candle_start": "2026-08-26T23:00:00Z",
+        "exit_close": 0.0010584368615523848
+      },
+      "return": 0.20892699001934378,
+      "source_response_sha256": {
+        "discovery_7d": "a6bfea94c602f813c32ae321b395b6629ad5c7111865fb9c9192c02c34b0c0f8",
+        "discovery_1d": "9b17bb6d06142ec0bc47acd60ce82d6242cfab51a080b6d9259a546a5535d5fb",
+        "ohlcv": "2a64e0e30ac8a9258bdd36240de10a6323450444320aa2fa5e8aeaef81846b2c"
+      }
+    }
+  ],
+  "winner_slot": "A",
+  "provenance": {
+    "retrieved_at_utc": "2026-09-24T14:01:00Z_to_14:06:26Z",
+    "request_ids": [
+      "e47bb26997ee813d652d990ad0ffcc6c",
+      "ae17442be1680a09009a4f79feea1c6",
+      "b4f2e31a4c46281843acda525bf8824",
+      "3c055439eb9f7643fac0c77a3370c46",
+      "c4e4db45c28d56096b4b705d5cc6b86d",
+      "ad02121ea0e6454cfc3b4c14d451d91b"
+    ],
+    "credits_used_total": 30,
+    "note": "Raw response bodies retained outside the repository in session scratch storage; this file holds derived values, provenance metadata and response hashes only. See DATA-CONTRACT.md section 6 for full call-by-call detail."
+  }
+}
