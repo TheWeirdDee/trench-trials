@@ -1,0 +1,12 @@
+# Private or local-only material never leaves this machine on `vercel deploy`.
+.env
+.env.*
+!.env.example
+.nansen-raw/
+.audit-tmp/
+artifacts/
+test-results/
+playwright-report/
+.next/
+node_modules/
+tsconfig.tsbuildinfo
