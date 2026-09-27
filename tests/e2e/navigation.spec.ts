@@ -4,7 +4,7 @@ test.describe('Navigation and route truthfulness', () => {
   test('landing navigation links to real sections and pages, and promises no Daily or Live', async ({ page }) => {
     await page.goto('/');
     const header = page.getByTestId('site-header');
-    for (const name of ['How it works', 'Why Nansen', 'FAQ', 'Docs']) {
+    for (const name of ['How it works', 'Why Nansen', 'Evidence', 'Docs', 'FAQ']) {
       await expect(header.getByRole('link', { name, exact: true }).first()).toBeAttached();
     }
     await expect(page.getByTestId('nav-daily')).not.toBeAttached();
@@ -23,6 +23,7 @@ test.describe('Navigation and route truthfulness', () => {
     await expect(page.getByTestId('nav-play')).toHaveText('Play');
     await expect(page.getByTestId('nav-history')).toHaveAttribute('aria-current', 'page');
     await expect(page.getByTestId('nav-docs')).toBeVisible();
+    await expect(page.getByTestId('nav-evidence')).toBeVisible();
     // No Daily is assigned and the latest Live round is invalid.
     await expect(page.getByTestId('nav-daily')).not.toBeAttached();
     await expect(page.getByTestId('nav-live')).not.toBeAttached();
@@ -52,6 +53,7 @@ test.describe('Navigation and route truthfulness', () => {
     for (const id of [
       'what-it-is',
       'problem',
+      'who',
       'how-it-works',
       'scoring',
       'ticker-tax',
@@ -61,7 +63,9 @@ test.describe('Navigation and route truthfulness', () => {
       'history',
       'privacy',
       'nansen',
+      'frozen',
       'provenance',
+      'verified',
       'leakage',
       'invalid',
       'commitments',
@@ -71,7 +75,8 @@ test.describe('Navigation and route truthfulness', () => {
       await expect(page.locator(`section#${id} h2`)).toBeVisible();
     }
     await expect(page.getByRole('link', { name: 'Read the FAQ' })).toHaveAttribute('href', '#faq');
-    await expect(page.locator('section#faq').getByTestId('faq').locator('details')).toHaveCount(8);
+    await expect(page.locator('section#faq').getByTestId('faq').locator('details')).toHaveCount(16);
+    await expect(page.getByTestId('docs-evidence-cta')).toHaveAttribute('href', '/evidence');
   });
 
   test('the landing FAQ is an accessible accordion with the eight questions', async ({ page }) => {
