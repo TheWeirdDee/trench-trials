@@ -29,7 +29,7 @@ import { join } from 'node:path';
 import { dbSchema, getPool } from '../src/lib/db';
 import { HISTORICAL_OHLCV_PATH, HISTORICAL_SCREENER_PATH } from '../src/lib/nansen/client';
 import { recordNansenAttempt } from '../src/lib/repo/apiCallLog';
-import { listAttemptedGenerationDates, listCatalog, persistGeneratedReplayRound } from '../src/lib/repo/replayCatalog';
+import { listActiveCatalog, listAttemptedGenerationDates, persistGeneratedReplayRound } from '../src/lib/repo/replayCatalog';
 import {
   forgeReplayRound,
   isFatalForgeError,
@@ -67,7 +67,7 @@ async function main() {
   }
 
   const count = intArg('count') ?? 15;
-  const catalog = await listCatalog();
+  const catalog = await listActiveCatalog(REPLAY_FORGE_VERSION);
   const attempted = process.argv.includes('--retry-attempted') ? [] : await listAttemptedGenerationDates();
   const plan = planReplayGeneration({
     count,
@@ -79,7 +79,9 @@ async function main() {
 
   console.log(`Replay generation plan — Round Forge v${REPLAY_FORGE_VERSION}`);
   console.log(`  database schema:     ${dbSchema() ?? 'public'}`);
-  console.log(`  existing catalog:    ${catalog.length} stored round(s), approved or withdrawn (all count for token reuse and near-duplicates)`);
+  console.log(
+    `  active catalog:      ${catalog.length} round(s) players can receive (${catalog.filter((c) => c.approved).length} approved, ${catalog.filter((c) => !c.approved).length} pending v${REPLAY_FORGE_VERSION}); token reuse and near-duplicates are judged against these`,
+  );
   console.log(`  already attempted:   ${attempted.length ? attempted.sort().join(', ') : 'none'} (skipped)`);
   console.log(`  rounds requested:    ${count}`);
   console.log(`  per round:           2 × POST ${HISTORICAL_SCREENER_PATH} (7d, 1d)`);
@@ -120,6 +122,7 @@ async function main() {
   const save = () => writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 
   const used: Array<{ cutoff: string; tokenAddresses: string[] }> = [...catalog];
+  const approvedRounds = catalog.filter((c) => c.approved);
   let consecutiveInsufficient = 0;
 
   for (const planned of plan.cutoffs) {
@@ -170,6 +173,12 @@ async function main() {
       console.log(
         `created ${stored.roundId} (${generated.round.assets.map((a) => a.token_symbol).join(' / ')}), ${n.networkCalls} requests`,
       );
+      // Catalog-quality warning (not a rejection): a token already in an approved playable round.
+      for (const a of generated.round.assets) {
+        for (const r of approvedRounds.filter((x) => x.tokenAddresses.includes(a.token_address))) {
+          console.log(`  warning: ${a.token_symbol} is already in approved playable round ${r.roundId}`);
+        }
+      }
       if (n.lastCreditsRemaining !== null && n.lastCreditsRemaining < worstCaseCredits) {
         report.stoppedReason = `credit balance ${n.lastCreditsRemaining} is below one more round`;
         save();
