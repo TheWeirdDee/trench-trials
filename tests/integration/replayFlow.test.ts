@@ -75,8 +75,11 @@ maybeDescribe('Replay flow — one real end-to-end round from round-001.json (re
     expect(raw).not.toMatch(/7GCihgDB|DrZ26cKJ|ukHH6c7m/); // addresses
     expect(raw).not.toMatch(/entryPrice|exitPrice|returnRatio|returnPct/);
     expect(raw).not.toMatch(/provenance|manifest|nonce/); // the sealed commitment stays sealed
-    // No exact cutoff before verdict — only a coarse period.
+    // No exact cutoff or resolution before verdict, in any field — only a coarse period.
     expect(json.round.exactCutoff).toBeUndefined();
+    expect(raw).not.toMatch(/2026-08-20|2026-08-27/);
+    expect(json.round.entryCloseAt).toBeNull();
+    expect(json.round.measurementEndAt).toBeNull();
     expect(json.round.coarsePeriod).toBe('August 2026');
   });
 
@@ -101,8 +104,9 @@ maybeDescribe('Replay flow — one real end-to-end round from round-001.json (re
     const raw = JSON.stringify(json);
     const slotB = json.assets.find((a: { slot: string }) => a.slot === 'B');
     expect(slotB.tokenSymbol).toBe('YZY');
-    // Identity is now present, but outcome still must not leak.
+    // Identity is now present, but outcome and exact dates still must not leak.
     expect(raw).not.toMatch(/entryPrice|exitPrice|returnRatio|returnPct|entryCandleStart/);
+    expect(raw).not.toMatch(/2026-08-20|2026-08-27/);
     expect(raw).not.toMatch(/provenance|manifest|nonce/);
   });
 
