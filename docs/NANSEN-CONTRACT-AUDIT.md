@@ -2,6 +2,8 @@
 
 Audit date: 2026-09-26, 18:00–19:00 UTC.
 
+Phases 1–10 retain their dated historical totals. For the current catalog and usage totals as of 2026-09-27, see Phase 11: six approved rounds, 116 logged requests and 572 logged credits, with 448 credits remaining after the last response.
+
 **Method.** The authority for every contract statement is the current official Nansen documentation, read on 2026-09-26. The project's own assumptions (DATA-CONTRACT.md, code comments) are compared against it, not trusted.
 
 Data evidence comes from three sources:
@@ -208,7 +210,7 @@ Every Nansen request goes through `nansenPost` in `src/lib/nansen/client.ts`, an
 
 | Round | Winner now | Winner after correction |
 | --- | --- | --- |
-| `2cd1219b` | FARTCOIN | $WIF |
+| `2cd1219b` | *withheld* | *withheld* (its rebuild `c5e34c58…` is playable) |
 | `b752542f` | SYRUPUSDC | PRIME |
 | `c3a06918` (today's Daily) | ZEREBRO | PIPPIN |
 
@@ -261,16 +263,18 @@ Unexplained differences: **none.**
 
 ### Per-round table
 
+*Since 2026-09-27, tokens, cutoffs and winners of playable rounds, and of the withdrawn rounds they were rebuilt from, are withheld from this document so it cannot spoil play. They are on the [Evidence page](https://trench-trials.vercel.app/evidence) behind its spoiler control.*
+
 All values come from the raw responses at the cutoff. The stored returns recompute exactly, and stored prices equal the raw candles in all 45 generated assets.
 
 | Cutoff | Round | Assets (1d vol; notes) | Winner (stored) | Failed rules | **Status** |
 | --- | --- | --- | --- | --- | --- |
-| 08-14 | `2cd1219b` | FARTCOIN ($9.1M), DBR ($255K), $WIF ($242K) | FARTCOIN | R7 only | **INVESTIGATE**: re-cut candidate (winner → $WIF) |
+| *withheld* | `2cd1219b` | *withheld*: the token set of its playable rebuild `c5e34c58…` | *withheld* | R7 only | **INVESTIGATE**: re-cut candidate |
 | 08-16 | `4819fe5c` | ONYC (unknown), ANSEM, SPX (bridged) | SPX | R1 | **WITHDRAW** |
 | 08-18 | `2c27efcd` | HYPE (bridged), ZEC (bridged), FO (unknown) | ZEC | R1, R7 | **WITHDRAW** |
 | 08-20 | `be497aab` (round-001) | POPCAT, YZY ($2.2K), BOME (+49.5% in the first 12 h after cutoff) | POPCAT | R3 (YZY), R7 (demonstrated leak). Candles 169/169, not truncated. | **WITHDRAW** (status only; evidence untouched) |
 | 08-22 | `8f99f74b` | JLP, PRIME, JUP | JUP | R1 ×2, R6 | **WITHDRAW** |
-| 08-24 | `cc57b7f1` | PNUT ($330K), JELLYJELLY ($461K, conflict), MEW ($312K) | JELLYJELLY | R7; JELLYJELLY conflict; R6 with `3b64543d` | **INVESTIGATE**: keep this one of the pair |
+| *withheld* | `cc57b7f1` | *withheld*: the token set of its playable rebuild `d2ecc59b…` (one tag conflict) | *withheld* | R7; one tag conflict; R6 | **INVESTIGATE**: keep this one of the pair |
 | 08-26 | `b6df9b0b` | CARDS (RWA), ANTFUN (conflict), MELANIA | ANTFUN | R1, R6 | **WITHDRAW** |
 | 08-28 | `2e17fb8f` | PENGU, RAY (conflict), TRUMP | RAY (−0.09%) | R7; R6 with `e2f5e059` | **WITHDRAW** (duplicate; the other of the pair is kept) |
 | 09-01 | `02c50d6d` | ETH (bridged), MET (yield), CRCLX (stock) | CRCLX | R1 ×3 | **WITHDRAW** |
@@ -290,7 +294,7 @@ All values come from the raw responses at the cutoff. The stored returns recompu
 
 | Pair | Keep | Why |
 | --- | --- | --- |
-| `3b64543d` / `cc57b7f1` (JELLYJELLY, MEW) | **`cc57b7f1`** | Every asset clears the $100K volume floor. `3b64543d`'s MEW had $81K. Coverage is equal (169/169). |
+| `3b64543d` / `cc57b7f1` (two shared tokens, *withheld*) | **`cc57b7f1`** | Every asset clears the $100K volume floor; one of `3b64543d`'s had $81K. Coverage is equal (169/169). |
 | `e2f5e059` / `2e17fb8f` (RAY, TRUMP) | **`e2f5e059`** | Deeper liquidity for RAY ($8.9M against $6.6M) and USELESS ($4.4M against PENGU's $6.5M, offset by higher volume). A meaningful return spread (+9.6% to +42.8%), where `2e17fb8f` was all-negative with a −0.09% winner. |
 | `045e7d9e` / `b6df9b0b` (ANTFUN, MELANIA) | Neither | `b6df9b0b` has an RWA (CARDS); `045e7d9e` fails the volume floor (MELANIA $32K) |
 | `b752542f` / `8f99f74b` (JLP, PRIME) | Neither | Excluded assets |
@@ -414,7 +418,7 @@ Nothing below has been run. Each step is exact and needs approval.
 | M2 | Record review decisions | `npm run review:round -- --plan <file> --actor <name> --confirm` (dry run first). The plan lists full UUIDs, resolved from the prefixes below. | **withdrawn** (13): `4819fe5c`, `2c27efcd`, `be497aab` (round-001; evidence untouched), `8f99f74b`, `b6df9b0b`, `2e17fb8f`, `02c50d6d`, `c3a06918`, `96cad1d6`, `b752542f`, `49bfd599`, `045e7d9e`, `3b64543d`. **investigate** (3, stored windows leak): `2cd1219b`, `cc57b7f1`, `e2f5e059`. **withdrawn**: Live `5a76f497` and `df397565` (audit record). |
 | M3 | Close Live `5a76f497` without resolving | `UPDATE rounds SET status = 'invalid', invalid_reason = 'quality_ineligible_assets' WHERE id = '5a76f497-fac6-4517-9705-8b216e5a2cdb' AND status = 'open'`: exactly one row; commitment, manifest and receipts untouched | Frees the single Live slot. An `open` round blocks any replacement. Saves the reserved 3 calls / 15 credits. Its page then reads as a void record, with copy specific to `quality_ineligible_assets`: "withdrawn before resolution … not fair comparisons". |
 | M4 | Daily 2026-09-26 | No change to `daily_challenges` | Hidden by M2 (`c3a06918` withdrawn). The row stays as history. |
-| M5 | Re-cut successors, **zero Nansen calls** | A new offline script (not yet written; dry run by default, tested in `tt_test` first). It builds a new round with cutoff D+1 00:00 from the saved `to_date = D` screener responses and the saved OHLCV candles, window [D+1, D+8]. That is exactly v4's `to_date = cutoff − 1 day`. Receipts reuse the original request IDs and hashes. The new round starts `pending_review`. | `2cd1219b` → successor, winner **$WIF**, no classification conflict. `cc57b7f1` → successor, winner JELLYJELLY: passes policy v2 by its DEX tag, but its identity conflict is your call. `e2f5e059` → **fails policy v2**: RAY carries a "Yield Bearing" tag. Only an explicit override could approve it, which is not recommended. Each successor must re-pass R4/R5 on the shifted window before approval. |
+| M5 | Re-cut successors, **zero Nansen calls** | A new offline script (not yet written; dry run by default, tested in `tt_test` first). It builds a new round with cutoff D+1 00:00 from the saved `to_date = D` screener responses and the saved OHLCV candles, window [D+1, D+8]. That is exactly v4's `to_date = cutoff − 1 day`. Receipts reuse the original request IDs and hashes. The new round starts `pending_review`. | `2cd1219b` → successor, no classification conflict. `cc57b7f1` → successor: passes policy v2 by one token's DEX tag, but that token's identity conflict is your call. `e2f5e059` → **fails policy v2**: RAY carries a "Yield Bearing" tag. Only an explicit override could approve it, which is not recommended. Each successor must re-pass R4/R5 on the shifted window before approval. |
 | M6 | Approve successors | `npm run review:round … --status approved --confirm` after a manual check of each successor | Makes 1–2 rounds player-facing. |
 | M7 | Daily 2026-09-27 | `npm run assign:daily -- --round <2cd1219b successor> --date 2026-09-27 --confirm` | The only candidate with no open question. While it is the Daily, Replay excludes it, so Replay would hold 0–1 rounds that day. |
 | M8 | *(needs a spending authorization)* Replacement Live | `npm run create:live -- --confirm`, then `resolve:live` after the window | At most **7 attempts / 23 credits** (create ≤3 / 3, resolve ≤4 / 20). It must be created by about **23:20 UTC on 2026-09-26** to resolve before the end of 09-27 UTC. It needs M1 and M3 first. It would open approved under the automated Live policy v2, and a reviewer can still withdraw it. |
@@ -432,13 +436,34 @@ Zero Nansen calls. `api_call_log` is still at 85 requests / 417 credits.
 | Migrations | `1790266000000_round_eligibility_status` and `1790267000000_round_lineage` applied to production (8 of 8) with `npm run migrate:up -- --confirm`. The dry run named the target first. |
 | Live `5a76f497…` | `status = invalid`, `invalid_reason = quality_ineligible_assets`, set by `npm run invalidate:live`. Never resolved. |
 | Old rounds | All 16 stored Replay rounds and both Live rounds are **withdrawn** (18 logged decisions). The owner withdrew every leaking round, including the three the audit had marked INVESTIGATE. Nothing was deleted, and commitments and receipts are unchanged. |
-| Rebuilds | `c5e34c58-24aa-4c91-87ef-e063247eb613`, from `2cd1219b` (FARTCOIN / DBR / $WIF, cutoff 2026-08-15, winner $WIF +43.92%). `d2ecc59b-cefd-46d6-90c0-966720441afe`, from `cc57b7f1` (PNUT / JELLYJELLY / MEW, cutoff 2026-08-25, winner JELLYJELLY −1.71%). Each is a new round with its own commitment and `rebuilt_from` set, built only from the 5 preserved responses its ancestor used. |
+| Rebuilds | `c5e34c58-24aa-4c91-87ef-e063247eb613`, from `2cd1219b`, and `d2ecc59b-cefd-46d6-90c0-966720441afe`, from `cc57b7f1` (tokens, cutoffs and winners *withheld*: both are playable). Each is a new round with its own commitment and `rebuilt_from` set, built only from the 5 preserved responses its ancestor used. |
 | Rebuild selection | The current policy v2 is applied to the preserved rows. Token reuse (±14 days) is judged against the catalog that existed when the data was fetched, as the generator did. That excluded ANTFUN (in `b6df9b0b`) and POPCAT (in round-001). Near-duplicates are judged among approved rounds. Without the reuse exclusion the selection would differ, and those tokens have no preserved candles, so the rebuild would fail closed. |
 | Leak-freedom evidence | Every row of a screener response shares one snapshot, so it is estimated jointly against the preserved hourly candles. `c5e34c58`: price level fits best 2h before the cutoff (0.14% mean error, against 1.05% at or after it); 1-day change fits 15h before (0.48pp against 0.86pp). `d2ecc59b`: price 22h before (0.08% against 0.17%); 1-day change 12h before (0.34pp against 0.38pp; the thinnest margin). Across all 16 preserved dates the joint fit never falls at or after D+24h. |
-| Independent verification | `npm run verify:rebuilt` (imports nothing from `src/`): 1,314 checks, 0 failures. It covers receipts ↔ preserved bodies, clues, positive classification (JELLYJELLY: Nansen tag "Decentralised Exchanges"), volume and liquidity floors, 169/169 candles, worst hourly move ≤ 5.8%, entry/exit closes, returns, winners, commitments and lineage. |
+| Independent verification | `npm run verify:rebuilt` (imports nothing from `src/`): 1,314 checks, 0 failures. It covers receipts ↔ preserved bodies, clues, positive classification (one token by its Nansen tag "Decentralised Exchanges"), volume and liquidity floors, 169/169 candles, worst hourly move ≤ 5.8%, entry/exit closes, returns, winners, commitments and lineage. |
 | Approval | Both rebuilds approved under policy v2. They share no tokens. |
 | Daily 2026-09-26 | Reassigned from `c3a06918…` to `c5e34c58…` after confirming 0 attempts. The row keeps `prior_round_id`, `replaced_at` and `replacement_reason`. |
 | `npm run verify` | 209 checks, 0 failures: 18 original rounds withdrawn, 2 rebuilt rounds approved, today's Daily approved. |
 | Player-facing state | `/next` serves only the two rebuilds, and not the Daily round on its day. `/api/daily` serves `c5e34c58…`. `/api/live` has nothing playable. |
 | Daily 2026-09-27 | `d2ecc59b…` assigned at 23:58:20 UTC on 2026-09-26, before rollover. Checked after rollover on production: `/api/daily` → `d2ecc59b…`, `/api/rounds/next` → `c5e34c58…`. |
 | Distribution | The two approved rounds are exported to `data/verified-rounds/rebuild-*.json` (derived manifest, request IDs, response hashes; no raw bodies) so a fresh clone can play them with `npm run setup:demo`. |
+
+---
+
+## Phase 11: Round Forge v4 and catalog publication, 2026-09-27 (owner-approved)
+
+Tokens, cutoffs and winners of the rounds below are withheld; they are on the Evidence page behind its spoiler control.
+
+| Step | Result |
+| --- | --- |
+| Spending | Authorized: 56 attempts / 280 credits. Used: **31 requests / 155 credits** in two runs (05:04 and 05:10 UTC), all HTTP 200. Balance after the last request: 448. `api_call_log` now holds 116 requests / 572 credits. |
+| Reuse rule | Token reuse (±14 days) and near-duplicates are judged against the active catalog only: approved rounds plus pending Round Forge v4 candidates. Withdrawn, invalid and rejected rounds do not count. Sharing one token with an approved round is a warning; sharing two or more is a hard failure. |
+| Candidates | 5 created `pending_review`: `c0f61751…` (run 1), `d06b6bc2…`, `50e1edc8…`, `15b4670e…`, `67d694e4…` (run 2). 3 dates were rejected at selection (2 screener calls each), producing no round. |
+| Leak-freedom | Each candidate reads the screener at `to_date = cutoff − 1 day`. The joint price-level fit of every candidate's snapshot falls before its cutoff. The 1-day-change fit is reported as not evaluable, because the stored candles start less than 48 hours before the cutoff. |
+| Independent verification | `npm run verify:rebuilt -- --round …` before review: 3,275 checks, 0 failures. It now covers every approved round by default: 3,936 checks, 0 failures. |
+| Catalog overlap (warnings, allowed) | `67d694e4…` and `d06b6bc2…` each share one token with `c5e34c58…`; `50e1edc8…` shares one token with `d2ecc59b…`. No two playable rounds share two tokens. |
+| Decisions | Applied at 07:50:29 UTC in **one transaction** by `npm run publish:rounds -- --plan … --actor TheWeirdDee --confirm`, after a dry run. The transaction locked the Daily table and first confirmed the reviewed state: exactly `c5e34c58…` and `d2ecc59b…` player-facing, exactly these five candidates pending, Daily 2026-09-27 → `d2ecc59b…`, and no Daily from 2026-09-28. **Approved:** `67d694e4…`, `d06b6bc2…`, `15b4670e…`, `50e1edc8…`. **Rejected:** `c0f61751…`, reason `catalog_quality_repeat_winner` (its winner repeats a playable round's winner). |
+| How the rejection is stored | The eligibility statuses are `pending_review`, `approved`, `investigate` and `withdrawn`. A rejected candidate is recorded as `withdrawn` with the rejection reason as its note and event, never deleted: its round, assets, 5 receipts, raw responses and commitment are unchanged, and it is never served. |
+| Daily 2026-09-28 | `67d694e4…`, inserted in the same transaction (`assignment_source = admin_script`). The 2026-09-26 and 2026-09-27 rows are unchanged. |
+| Player-facing state | 6 approved rounds. Replay on 2026-09-27: 4 (`d2ecc59b…` and `67d694e4…` held for their Daily). On 2026-09-28: 5. Players 5 and attempts 5, unchanged. |
+| `npm run verify` | 324 checks, 0 failures, including the scheduled Daily, the holdback count and a receipt-by-receipt reconciliation of every playable round with the call log (30 of 30). |
+| Distribution | The four new rounds are exported to `data/verified-rounds/forge-v4-*.json`; `npm run setup:demo` imports all six approved bundles. |
