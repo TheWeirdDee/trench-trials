@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { CandidateCard } from '@/components/game/CandidateCard';
 import { CountdownTimer } from '@/components/game/CountdownTimer';
+import { DailyComplete } from '@/components/game/DailyComplete';
 import { DailyShareCard } from '@/components/game/DailyShareCard';
 import { LiveStatusPanel } from '@/components/game/LiveStatusPanel';
 import { RecognitionPrompt } from '@/components/game/RecognitionPrompt';
 import { StageProgress } from '@/components/game/StageProgress';
+import { SignalGuide } from '@/components/game/SignalGuide';
 import { VerdictView } from '@/components/game/VerdictView';
 import {
   isBlindStage,
@@ -24,12 +26,14 @@ export interface DailyContext {
   dailyNumber: number;
   utcDate: string;
   resetAtUtc: string;
+  /** A Daily is already assigned for the next UTC date. */
+  nextScheduled: boolean;
 }
 
 function modeLabel(round: RoundMeta, daily?: DailyContext): string {
   if (daily) return `Daily #${daily.dailyNumber}`;
   if (round.mode === 'live') return 'Live trial';
-  return 'Verified trial';
+  return 'Replay trial';
 }
 
 function RoundHeader({ round, stage, daily }: { round: RoundMeta; stage: 1 | 2 | 3; daily?: DailyContext }) {
@@ -45,9 +49,6 @@ function RoundHeader({ round, stage, daily }: { round: RoundMeta; stage: 1 | 2 |
           ·
         </span>
         <span className="capitalize text-secondary">{round.chain}</span>
-        <a href="https://www.nansen.ai/" target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]">
-          Powered by Nansen
-        </a>
       </div>
       <StageProgress current={stage} />
     </div>
@@ -201,7 +202,7 @@ export function RoundClient({ roundId, daily }: { roundId: string; daily?: Daily
             <div key={i} className="h-72 animate-pulse rounded-card bg-raised" />
           ))}
         </div>
-        <p className="mt-6 text-[16px] text-secondary">Loading verified round…</p>
+        <p className="mt-6 text-[16px] text-secondary">Loading the round…</p>
       </div>
     );
   }
@@ -214,7 +215,7 @@ export function RoundClient({ roundId, daily }: { roundId: string; daily?: Daily
       <div className="page py-16">
         <div className="max-w-2xl rounded-panel bg-raised p-8 sm:p-10" data-testid="round-error">
           <p className="eyebrow">
-            {entryClosed ? 'Entry closed' : notFound ? 'Not found' : notAvailable ? 'Withdrawn' : 'Unavailable'}
+            {entryClosed ? 'Entry closed' : notFound ? 'Not found' : 'Unavailable'}
           </p>
           <h1 className="type-title mt-3">
             {entryClosed
@@ -229,14 +230,14 @@ export function RoundClient({ roundId, daily }: { roundId: string; daily?: Daily
             {entryClosed
               ? 'Predictions are accepted only while entry is open. The round is measured and resolved from real Nansen candle data, and only players who entered before the close are scored.'
               : notFound
-                ? 'Check the link, or start a new verified round.'
+                ? 'Check the link, or start a new round.'
                 : notAvailable
-                  ? 'It has been withdrawn or is awaiting an eligibility review, so it cannot be started. Nothing is lost if you had not begun it.'
+                  ? 'This round is not open for play. Nothing is lost if you had not begun it.'
                   : 'The server could not be reached. Your choices are safe — try again in a moment.'}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/play" className="btn-primary">
-              Play a verified round
+              Play a round
             </Link>
             {!entryClosed && !notFound && !notAvailable && (
               <button type="button" onClick={() => refetch()} className="btn-quiet">
@@ -279,6 +280,7 @@ export function RoundClient({ roundId, daily }: { roundId: string; daily?: Daily
               </div>
             ))}
           </div>
+          <SignalGuide />
           <ActionBar>
             <p className="hidden text-[15px] text-secondary sm:block">
               {selectedBlindSlot ? (
@@ -345,6 +347,7 @@ export function RoundClient({ roundId, daily }: { roundId: string; daily?: Daily
               </div>
             ))}
           </div>
+          <SignalGuide />
           <ActionBar>
             <p className="hidden text-[15px] text-secondary sm:block">
               {pendingFinalSlot === data.attempt.blindSlot ? (
@@ -397,11 +400,20 @@ export function RoundClient({ roundId, daily }: { roundId: string; daily?: Daily
               </div>
             ))}
           </div>
+          <SignalGuide />
         </div>
       )}
 
+      {isVerdictStage(data) && daily && <DailyComplete resetAtUtc={daily.resetAtUtc} nextScheduled={daily.nextScheduled} />}
+
       {isVerdictStage(data) && (
-        <VerdictView verdict={data.verdict} round={data.round} provenance={data.provenance} isLive={isLive}>
+        <VerdictView
+          verdict={data.verdict}
+          round={data.round}
+          provenance={data.provenance}
+          isLive={isLive}
+          context={daily ? 'daily' : isLive ? 'live' : 'replay'}
+        >
           <div className="grid gap-5 md:grid-cols-3" role="list" aria-label="Verdict — real returns">
             {data.verdict.assets.map((asset) => (
               <div role="listitem" key={asset.slot}>
@@ -418,6 +430,7 @@ export function RoundClient({ roundId, daily }: { roundId: string; daily?: Daily
               </div>
             ))}
           </div>
+          <SignalGuide />
           {daily && (
             <DailyShareCard dailyNumber={daily.dailyNumber} verdict={data.verdict} />
           )}
