@@ -58,12 +58,20 @@ export function buildRoundStageResponse(loaded: LoadedRound, storedAttempt: Atte
   };
   const attempt = storedAttempt ? effectiveAttempt(storedAttempt, serverNow) : null;
 
-  const snapshotPublishedAt =
-    toIsoOrNull(round.snapshot_published_at) ?? toIsoOrNull(round.created_at) ?? serverNow.toISOString();
-  const entryCloseAt = toIsoOrNull(round.entry_close_at) ?? toIsoOrNull(round.cutoff) ?? serverNow.toISOString();
-  const measurementStartAt = toIsoOrNull(round.measurement_start_at);
-  const measurementEndAt =
-    toIsoOrNull(round.measurement_end_at) ?? toIsoOrNull(round.resolution_time) ?? serverNow.toISOString();
+  // Live schedule fields exist only for Live rounds. A Replay or Daily round's exact cutoff and
+  // resolution are released only with the verdict (exactCutoff / resolutionTime below), never
+  // during Blind Pick or Unmask.
+  const isLiveRound = round.mode === 'live';
+  const snapshotPublishedAt = isLiveRound
+    ? (toIsoOrNull(round.snapshot_published_at) ?? toIsoOrNull(round.created_at) ?? serverNow.toISOString())
+    : null;
+  const entryCloseAt = isLiveRound
+    ? (toIsoOrNull(round.entry_close_at) ?? toIsoOrNull(round.cutoff) ?? serverNow.toISOString())
+    : null;
+  const measurementStartAt = isLiveRound ? toIsoOrNull(round.measurement_start_at) : null;
+  const measurementEndAt = isLiveRound
+    ? (toIsoOrNull(round.measurement_end_at) ?? toIsoOrNull(round.resolution_time) ?? serverNow.toISOString())
+    : null;
   const exactCutoff = toIsoOrNull(round.cutoff);
   const resolutionTime = toIsoOrNull(round.resolution_time);
 
