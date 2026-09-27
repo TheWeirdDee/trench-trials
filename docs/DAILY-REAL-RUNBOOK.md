@@ -1,21 +1,24 @@
 # Daily — real-data runbook
 
-Updated 2026-09-26. This runbook covers making a verified round the Daily for a UTC date. Assigning is deliberate and permanent, and nothing here runs automatically.
+Updated 2026-09-27. This runbook covers making a verified round the Daily for a UTC date. Assigning is deliberate and permanent, and nothing here runs automatically. Token names of playable rounds are not written here; they stay behind the Evidence page's spoiler control.
 
 **Current state**
 
-- **2026-09-26 → `c5e34c58-24aa-4c91-87ef-e063247eb613`** (FARTCOIN / DBR / $WIF, cutoff 2026-08-15). This is the leak-free rebuild of `2cd1219b`, approved under eligibility policy v2.
+- **2026-09-26 → `c5e34c58-24aa-4c91-87ef-e063247eb613`**, the leak-free rebuild of `2cd1219b`, approved under eligibility policy v2.
   - It was first assigned to `c3a06918-…` (ZEREBRO / PIPPIN / FO) at 16:49:36 UTC. The eligibility audit withdrew that round (F1 leakage; FO unclassified, with a −47% one-hour move).
   - Reassigned at 21:53:58 UTC with `npm run reassign:daily` after confirming 0 attempts. The row keeps `prior_round_id = c3a06918-…`, `replaced_at` and `replacement_reason`.
-- **2026-09-27 → `d2ecc59b-cefd-46d6-90c0-966720441afe`** (PNUT / JELLYJELLY / MEW, cutoff 2026-08-25), assigned 2026-09-26 23:58:20 UTC with `npm run assign:daily -- --round d2ecc59b-… --date 2026-09-27 --confirm`, before rollover. After rollover a fresh guest receives `d2ecc59b` as the Daily and `c5e34c58` as Replay.
-- No later date is assigned yet. Daily disappears from navigation at 2026-09-28 00:00 UTC unless another approved round is assigned.
+- **2026-09-27 → `d2ecc59b-cefd-46d6-90c0-966720441afe`**, the leak-free rebuild of `cc57b7f1`, assigned 2026-09-26 23:58:20 UTC with `npm run assign:daily -- --round d2ecc59b-… --date 2026-09-27 --confirm`, before rollover.
+- **2026-09-28 → `67d694e4-c82a-46a2-b76a-1579c00c999d`**, a Round Forge v4 round, scheduled 2026-09-27 07:50:29 UTC by `npm run publish:rounds -- --confirm` in the same transaction that approved it and three other candidates and recorded the rejection of `c0f61751…`. The transaction first checked that 2026-09-28 had no Daily, that 2026-09-27 still pointed at `d2ecc59b…`, and that the catalog was exactly the reviewed one; the existing rows were not touched.
+- Replay holdback: on 2026-09-27 Replay offers four rounds (`d2ecc59b…` and `67d694e4…` are held); on 2026-09-28 five (`d2ecc59b…` returns, `67d694e4…` is held until its day has passed).
+- No date after 2026-09-28 is assigned yet. Daily disappears from navigation at 2026-09-29 00:00 UTC unless another approved round is assigned. `d06b6bc2…`, `15b4670e…` and `50e1edc8…` are approved and have never been a Daily.
 - Only a round approved under the current eligibility policy can be assigned (`round_not_approved` otherwise).
 - round-001 (`be497aab…`) must **not** be used as the Daily: that is a standing product decision.
 - Assigning makes **zero Nansen calls**.
 
-**Two ways to assign.** Both call the same `assignDailyRound` checks:
+**Three ways to assign.** The first two call the same `assignDailyRound` checks:
 - `npm run assign:daily -- --round <uuid> [--date YYYY-MM-DD]`: a dry run, then add `--confirm`. It refuses past dates.
 - `POST /api/internal/daily/assign` (§3). This needs `CRON_SECRET` to be configured.
+- `npm run publish:rounds -- --plan plan.json --actor <name>` when the Daily round is being published at the same time. The plan names the exact catalog and Daily rows the reviewer saw; approvals, rejections and the Daily row commit in one transaction or not at all, under a lock on the Daily table. It applies the same checks (approved, canonical, with receipts, never a Daily, date free, not in the past) and refuses the whole plan on any difference.
 
 ## 1. The model
 
