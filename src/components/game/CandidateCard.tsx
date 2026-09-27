@@ -1,6 +1,5 @@
 'use client';
 
-import { useId, useState } from 'react';
 import type { ClueView, Slot } from '@/lib/api/types';
 import { bucketLabel, bucketLevel, CLUE_META, CLUE_ORDER } from '@/components/clueDisplay';
 
@@ -67,14 +66,11 @@ function Badges({ isBlindSlot, isFinalSlot, decided, isWinner }: Partial<Candida
 }
 
 /**
- * One candidate. The selectable area and the "what these signals mean" control are
- * siblings — never a control nested inside another — so the card is valid HTML and each
- * control is reachable on its own by keyboard and screen reader.
+ * One candidate. The signal definitions live once, in the shared SignalGuide below the
+ * candidates, not on every card.
  */
 export function CandidateCard(props: CandidateCardProps) {
   const { slot, clues, tokenSymbol, returnPct, selected, onSelect, disabled, revealed } = props;
-  const [showDefinitions, setShowDefinitions] = useState(false);
-  const definitionsId = useId();
   const interactive = typeof onSelect === 'function';
 
   const body = (
@@ -163,23 +159,6 @@ export function CandidateCard(props: CandidateCardProps) {
           {body}
         </div>
       )}
-      <button
-        type="button"
-        className="self-start rounded-control px-2 py-2 text-[14px] font-semibold text-secondary underline decoration-line underline-offset-4 hover:text-cream"
-        aria-expanded={showDefinitions}
-        aria-controls={definitionsId}
-        onClick={() => setShowDefinitions((v) => !v)}
-      >
-        {showDefinitions ? 'Hide signal definitions' : 'What these signals mean'}
-      </button>
-      <dl id={definitionsId} hidden={!showDefinitions} className="rounded-card bg-raised-2 p-4 text-[14px] leading-relaxed">
-        {CLUE_ORDER.map((key) => (
-          <div key={key} className="py-1.5">
-            <dt className="font-bold text-cream">{CLUE_META[key].title}</dt>
-            <dd className="text-secondary">{CLUE_META[key].hint}</dd>
-          </div>
-        ))}
-      </dl>
     </article>
   );
 }
