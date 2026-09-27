@@ -8,7 +8,9 @@ Every item must be true and evidenced before submitting. Status as of 2026-09-26
 | --- | --- | --- |
 | Blind Pick → Unmask → Verdict on real data | Done | Two leak-free, approved Replay rounds, `c5e34c58…` and `d2ecc59b…`, verified by `npm run verify:rebuilt` (0 failures); e2e `replay.spec.ts` |
 | No leaking or ineligible round playable | Done | All 16 stored rounds withdrawn (evidence preserved). `npm run verify` fails if any pre-v4 round is approved. |
-| Genuine Daily assigned | Done for 2026-09-26 | `c5e34c58…`, reassigned from the withdrawn `c3a06918…` with an audit record, before any attempt |
+| Genuine Daily assigned | Done for 2026-09-26 and 2026-09-27 | `c5e34c58…` (reassigned from the withdrawn `c3a06918…` with an audit record), then `d2ecc59b…` |
+| Fresh clone playable without a Nansen key | Done | `npm run setup:demo -- --confirm` imports the two verified bundles; measured 2 min 14 s from a clean copy |
+| Public evidence | Done | `/evidence`: request IDs, response hashes, commitments and live checks for every playable round |
 | Live | Withheld, honestly | `5a76f497…` failed the eligibility policy; marked invalid, never resolved. `/live` shows no playable round. |
 | No invalid round presented as success | Done | Invalid rounds are readable only as void records and can never be played |
 
@@ -32,9 +34,8 @@ Every item must be true and evidenced before submitting. Status as of 2026-09-26
 ## Deployment
 
 - [x] Production migrations applied through `1790267000000_round_lineage` (8 of 8)
-- [ ] Vercel production: `DATABASE_URL` (transaction pooler), `DB_POOL_MAX`, `SESSION_SECRET`, `CRON_SECRET`; no `NANSEN_API_KEY`
-- [ ] `/api/health` returns ok; `/api/internal/*` returns 401 without the secret; security headers present; no `Server-Timing`
-- [ ] Desktop and mobile paths checked on the public URL
+- [x] Vercel production at https://trench-trials.vercel.app: `DATABASE_URL` (transaction pooler), `DB_POOL_MAX`, `SESSION_SECRET`, `CRON_SECRET`; no `NANSEN_API_KEY`
+- [ ] Post-deploy smoke test of the latest commit: health, 401 on `/api/internal/*`, security headers, no `Server-Timing`, Replay, Daily, History, Docs and Evidence
 
 ## Submission package
 
