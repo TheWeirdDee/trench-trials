@@ -23,9 +23,18 @@ function markOnboarded() {
 }
 
 const STEPS = [
-  { title: 'Read the signals', body: 'Three real tokens, four Nansen signals each. No names.' },
-  { title: 'Reveal the names', body: 'Lock a blind pick, then see the tickers and decide again.' },
-  { title: 'See what changed', body: 'The real outcome shows whether the names helped or hurt.' },
+  {
+    title: 'Blind pick',
+    body: 'Three real tokens, four Nansen signals each. Names, dates and prices are hidden. Lock the one you think returns the most.',
+  },
+  {
+    title: 'Unmask',
+    body: 'The names appear while the future stays hidden. Stick with your pick or switch, once, before the timer ends.',
+  },
+  {
+    title: 'Verdict',
+    body: 'The real outcome shows what recognition gained or cost you. That difference is your Ticker Tax.',
+  },
 ];
 
 function OnboardingSheet({ onStart }: { onStart: () => void }) {
@@ -44,7 +53,7 @@ function OnboardingSheet({ onStart }: { onStart: () => void }) {
           Play as a guest.
         </h1>
         <p className="type-body mt-4">
-          Your choices and results will be saved in this browser. No wallet or signup is required.
+          No wallet or signup. Your trial history is saved to this browser as an anonymous profile.
         </p>
         <ol className="mt-8 grid gap-3">
           {STEPS.map((step, i) => (
@@ -59,6 +68,9 @@ function OnboardingSheet({ onStart }: { onStart: () => void }) {
             </li>
           ))}
         </ol>
+        <p className="mt-5 text-[15px] text-secondary">
+          Replay gives you a new round each time. The Daily is one measured attempt per UTC day, the same for everyone.
+        </p>
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
           <button ref={startRef} type="button" onClick={onStart} className="btn-primary" data-testid="onboarding-start">
             Start the trial
@@ -72,12 +84,90 @@ function OnboardingSheet({ onStart }: { onStart: () => void }) {
   );
 }
 
+interface Progress {
+  catalogSize: number;
+  completedCount: number;
+  daily: { available: boolean; completed: boolean; resetAtUtc: string; nextScheduled: boolean };
+}
+
+interface NextBody {
+  available: boolean;
+  roundId?: string;
+  reason?: 'all_played' | 'daily_only' | 'none_approved';
+  progress?: Progress;
+}
+
 type PlayState =
   | { kind: 'checking' }
   | { kind: 'onboarding' }
   | { kind: 'finding' }
-  | { kind: 'exhausted'; message: string; noneApproved?: boolean }
+  | { kind: 'exhausted'; body: NextBody }
   | { kind: 'error' };
+
+function untilLabel(targetIso: string): string {
+  const ms = Math.max(0, Date.parse(targetIso) - Date.now());
+  const hours = Math.floor(ms / 3_600_000);
+  const minutes = Math.floor((ms % 3_600_000) / 60_000);
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+}
+
+/** An empty Replay queue, explained honestly: what the guest has done and what comes next. */
+function Exhausted({ body }: { body: NextBody }) {
+  const progress = body.progress;
+  const daily = progress?.daily;
+  const dailyWaiting = Boolean(daily?.available && !daily.completed);
+  const nextDaily = daily?.nextScheduled
+    ? `The next Daily opens in ${untilLabel(daily.resetAtUtc)} (00:00 UTC).`
+    : 'The next Daily has not been scheduled yet.';
+
+  let heading: string;
+  let lead: string;
+  if (body.reason === 'none_approved') {
+    heading = 'No round is open for play right now.';
+    lead = 'New rounds appear once they are built from Nansen data and pass review.';
+  } else if (body.reason === 'daily_only' && dailyWaiting) {
+    heading = 'Your next round is today’s Daily.';
+    lead = 'The remaining round is today’s Daily: one measured attempt, the same for everyone.';
+  } else {
+    heading = 'You’ve completed the current Replay catalog.';
+    lead = progress
+      ? `You’ve played ${progress.completedCount} of ${progress.catalogSize} round${progress.catalogSize === 1 ? '' : 's'}.`
+      : 'You’ve played every round available to you.';
+  }
+
+  return (
+    <div className="page py-16 sm:py-24" data-testid="replay-exhausted">
+      <div className="max-w-3xl">
+        <p className="eyebrow">Replay</p>
+        <h1 className="type-section mt-4" data-testid="exhausted-heading">
+          {heading}
+        </h1>
+        <p className="type-lead mt-6">{lead}</p>
+        {daily && body.reason !== 'none_approved' && (
+          <p className="type-body mt-4" data-testid="exhausted-daily">
+            {dailyWaiting ? 'Today’s Daily is waiting for you.' : daily.available ? `Today’s Daily is done. ${nextDaily}` : nextDaily}
+          </p>
+        )}
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          {dailyWaiting && (
+            <Link href="/daily" className="btn-primary" data-testid="exhausted-daily-cta">
+              Play today’s Daily
+            </Link>
+          )}
+          <Link href="/history" className={dailyWaiting ? 'btn-quiet' : 'btn-primary'}>
+            View History
+          </Link>
+          <Link href="/evidence" className="btn-quiet">
+            See the evidence
+          </Link>
+          <Link href="/" className="btn-quiet">
+            Home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PlayPage() {
   const router = useRouter();
@@ -87,16 +177,12 @@ export default function PlayPage() {
     setState({ kind: 'finding' });
     try {
       const res = await fetch('/api/rounds/next', { credentials: 'include' });
-      const body: { available: boolean; roundId?: string; message?: string; reason?: string } = await res.json();
+      const body: NextBody = await res.json();
       if (body.available && body.roundId) {
         router.replace(`/round/${body.roundId}`);
         return;
       }
-      setState({
-        kind: 'exhausted',
-        noneApproved: body.reason === 'none_approved',
-        message: body.message ?? 'You have completed every available verified round.',
-      });
+      setState({ kind: 'exhausted', body });
     } catch {
       setState({ kind: 'error' });
     }
@@ -121,30 +207,7 @@ export default function PlayPage() {
     );
   }
 
-  if (state.kind === 'exhausted') {
-    return (
-      <div className="page py-16 sm:py-24" data-testid="replay-exhausted">
-        <div className="max-w-3xl">
-          <p className="eyebrow">Verified rounds</p>
-          <h1 className="type-section mt-4">
-            {state.noneApproved ? 'No verified round is open for play.' : 'You have played every verified round.'}
-          </h1>
-          <p className="type-lead mt-6">
-            {state.message} New rounds appear only after they are built from real Nansen data and verified — none are
-            generated to fill the gap.
-          </p>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Link href="/history" className="btn-primary">
-              See your History
-            </Link>
-            <Link href="/docs" className="btn-quiet">
-              How rounds are verified
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (state.kind === 'exhausted') return <Exhausted body={state.body} />;
 
   if (state.kind === 'error') {
     return (
@@ -163,7 +226,7 @@ export default function PlayPage() {
   return (
     <div className="page py-16">
       <p className="text-[16px] text-secondary" role="status">
-        Finding your next verified round…
+        Finding your next round…
       </p>
     </div>
   );
