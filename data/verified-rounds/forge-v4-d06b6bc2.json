@@ -1,0 +1,449 @@
+{
+  "format": "trench-trials.verified-round-bundle/1",
+  "note": "Derived from authenticated Nansen API responses. Raw response bodies are not included; each is identified by its Nansen request ID and SHA-256. Not synthetic.",
+  "source": {
+    "round_id": "d06b6bc2-b289-4ea0-8e7e-afebd4aa5a44",
+    "commitment_hash": "d117552f0a674f9e0984b61ec9c255a5a8269391de56ebf6424b513063d92a1e",
+    "eligibility_policy_version": 2,
+    "rebuilt_from": null
+  },
+  "round": {
+    "round_id": "forge-v4-2026-09-12",
+    "mode": "replay",
+    "chain": "solana",
+    "cutoff": "2026-09-12T00:00:00.000Z",
+    "horizon_days": 7,
+    "candle_interval": "1h",
+    "resolution_time": "2026-09-19T00:00:00.000Z",
+    "round_forge_version": 4,
+    "clue_schema_version": 1,
+    "price_policy_version": 1,
+    "eligibility_policy": {
+      "sort": "liquidity_desc_top_3",
+      "chain": "solana",
+      "exit_price": "close of the 1h candle starting 1h before the resolution time",
+      "entry_price": "close of the 1h candle starting 1h before the cutoff",
+      "allowed_sectors": [
+        "AI Agents",
+        "Artificial Intelligence",
+        "Decentralised Exchanges",
+        "GameFi",
+        "Memecoins",
+        "Perps, Options and Derivatives",
+        "Scaling & Connectivity"
+      ],
+      "candle_coverage": "complete",
+      "exclude_sectors": [
+        "Stablecoin"
+      ],
+      "slot_assignment": "token_address_ascending",
+      "excluded_sectors": [
+        "Liquid Staking",
+        "RWAs",
+        "Stablecoin",
+        "Tokenized Stocks",
+        "Yield Bearing"
+      ],
+      "excluded_symbols": [
+        "AAVE",
+        "ADA",
+        "APT",
+        "AVAX",
+        "BNB",
+        "BNSOL",
+        "BSOL",
+        "BTC",
+        "BUSD",
+        "CBBTC",
+        "CRVUSD",
+        "DAI",
+        "DOGE",
+        "DOT",
+        "DSOL",
+        "ETH",
+        "EURC",
+        "FDUSD",
+        "FRAX",
+        "HSOL",
+        "HYPE",
+        "INF",
+        "JITOSOL",
+        "JLP",
+        "JUPSOL",
+        "LINK",
+        "LTC",
+        "LUSD",
+        "MSOL",
+        "PAXG",
+        "PYUSD",
+        "SOL",
+        "SPX",
+        "STSOL",
+        "SUI",
+        "SYRUPUSDC",
+        "TBTC",
+        "TON",
+        "TRX",
+        "TUSD",
+        "UNI",
+        "USD1",
+        "USDC",
+        "USDE",
+        "USDG",
+        "USDH",
+        "USDS",
+        "USDT",
+        "USDY",
+        "VSOL",
+        "WBTC",
+        "WETH",
+        "WSOL",
+        "XAUT",
+        "XRP",
+        "ZBTC",
+        "ZEC"
+      ],
+      "screener_to_date": "cutoff date − 1 day",
+      "liquidity_usd_min": 2000000,
+      "reuse_window_days": 14,
+      "token_age_days_min": 30,
+      "market_cap_usd_band": [
+        60000000,
+        200000000
+      ],
+      "near_duplicate_rule": "no two catalog rounds share 2 or more tokens",
+      "round_forge_version": 4,
+      "min_daily_volume_usd": 100000,
+      "max_hourly_move_in_window": 0.3,
+      "eligibility_policy_version": 2
+    },
+    "assets": [
+      {
+        "slot": "A",
+        "token_symbol": "FARTCOIN",
+        "token_address": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+        "sectors": [
+          "Memecoins",
+          "Artificial Intelligence",
+          "AI Agents"
+        ],
+        "clue_inputs": {
+          "volume_1d": 6646544.273653174,
+          "volume_7d": 30668120.230630904,
+          "netflow_1d": -420517.89583491534,
+          "buy_volume_1d": 3113013.1889091292,
+          "liquidity_usd": 6661434.796992968,
+          "market_cap_usd": 143698177.751508,
+          "sell_volume_1d": 3533531.0847440446,
+          "token_age_days": 693,
+          "price_change_7d": -0.15644621634350184
+        },
+        "clues": {
+          "recent_momentum": {
+            "value": -0.15644621634350184,
+            "bucket": "falling"
+          },
+          "buy_sell_balance": {
+            "value": -0.06326865187701276,
+            "bucket": "balanced"
+          },
+          "trading_acceleration": {
+            "value": 1.5170740679796497,
+            "bucket": "accelerating"
+          },
+          "netflow_over_liquidity": {
+            "value": -0.06312722538765086,
+            "bucket": "outward"
+          }
+        },
+        "price": {
+          "entry_candle_start": "2026-09-11T23:00:00.000Z",
+          "entry_close": 0.14370203125959444,
+          "exit_candle_start": "2026-09-18T23:00:00.000Z",
+          "exit_close": 0.16205183852427144
+        },
+        "return": 0.12769344388409154,
+        "source_response_sha256": {
+          "ohlcv": "dbb7284bdd2605a13524fcba4831eca11f59696d33841be836c2ecc509b46613",
+          "discovery_1d": "faf9fc91da497cc3e2cb7ef79edf42aeb5e868c0660f0fff5c223a5e39885aed",
+          "discovery_7d": "6a38b6dd3ef3d849f6c8fcbc67459a55500803cdef1d27b88514b4fc85cd42f6"
+        }
+      },
+      {
+        "slot": "B",
+        "token_symbol": "$BC",
+        "token_address": "BCNT4t3rv5Hva8RnUtJUJLnxzeFAabcYp8CghC1SmWin",
+        "sectors": [
+          "GameFi",
+          "GambleFi"
+        ],
+        "clue_inputs": {
+          "volume_1d": 193955.95819114186,
+          "volume_7d": 814308.6968208759,
+          "netflow_1d": 97416.33373923073,
+          "buy_volume_1d": 145686.1459651863,
+          "liquidity_usd": 2057643.7770877152,
+          "market_cap_usd": 121079098.836065,
+          "sell_volume_1d": 48269.812225955575,
+          "token_age_days": 626,
+          "price_change_7d": 0.2162479318334669
+        },
+        "clues": {
+          "recent_momentum": {
+            "value": 0.2162479318334669,
+            "bucket": "rising"
+          },
+          "buy_sell_balance": {
+            "value": 0.5022600730998312,
+            "bucket": "buy-heavy"
+          },
+          "trading_acceleration": {
+            "value": 1.667293635249785,
+            "bucket": "accelerating"
+          },
+          "netflow_over_liquidity": {
+            "value": 0.047343633929245454,
+            "bucket": "balanced"
+          }
+        },
+        "price": {
+          "entry_candle_start": "2026-09-11T23:00:00.000Z",
+          "entry_close": 0.03810527381726769,
+          "exit_candle_start": "2026-09-18T23:00:00.000Z",
+          "exit_close": 0.03860534957428859
+        },
+        "return": 0.013123531388830711,
+        "source_response_sha256": {
+          "ohlcv": "8c6dbb9fea37953561d33c26eccc5bfbb1da8554b0f3c0ad1708a589b733751d",
+          "discovery_1d": "faf9fc91da497cc3e2cb7ef79edf42aeb5e868c0660f0fff5c223a5e39885aed",
+          "discovery_7d": "6a38b6dd3ef3d849f6c8fcbc67459a55500803cdef1d27b88514b4fc85cd42f6"
+        }
+      },
+      {
+        "slot": "C",
+        "token_symbol": "ANTFUN",
+        "token_address": "CWZ6BsdnjkDVTGkmL6bGbJXXig6ceef12KvyGQW14cMt",
+        "sectors": [
+          "Decentralised Exchanges",
+          "Scaling & Connectivity",
+          "GameFi"
+        ],
+        "clue_inputs": {
+          "volume_1d": 30848701.034942113,
+          "volume_7d": 116905594.04129452,
+          "netflow_1d": 858860.2441779245,
+          "buy_volume_1d": 15853780.63956002,
+          "liquidity_usd": 46542712.47014755,
+          "market_cap_usd": 147616652.711149,
+          "sell_volume_1d": 14994920.395382095,
+          "token_age_days": 132,
+          "price_change_7d": 0.1725815906903726
+        },
+        "clues": {
+          "recent_momentum": {
+            "value": 0.1725815906903726,
+            "bucket": "rising"
+          },
+          "buy_sell_balance": {
+            "value": 0.02784105052608534,
+            "bucket": "balanced"
+          },
+          "trading_acceleration": {
+            "value": 1.8471392153254709,
+            "bucket": "accelerating"
+          },
+          "netflow_over_liquidity": {
+            "value": 0.01845316266706193,
+            "bucket": "balanced"
+          }
+        },
+        "price": {
+          "entry_candle_start": "2026-09-11T23:00:00.000Z",
+          "entry_close": 0.07818126015495123,
+          "exit_candle_start": "2026-09-18T23:00:00.000Z",
+          "exit_close": 0.08260269942985658
+        },
+        "return": 0.05655369670611954,
+        "source_response_sha256": {
+          "ohlcv": "79626fef80dbbcd0857531808ebe1a3ae1f652ee36672706fb44055259540b2f",
+          "discovery_1d": "faf9fc91da497cc3e2cb7ef79edf42aeb5e868c0660f0fff5c223a5e39885aed",
+          "discovery_7d": "6a38b6dd3ef3d849f6c8fcbc67459a55500803cdef1d27b88514b4fc85cd42f6"
+        }
+      }
+    ],
+    "winner_slot": "A",
+    "provenance": {
+      "requests": [
+        {
+          "purpose": "replay_discovery_7d",
+          "endpoint": "/api/v1beta1/token-screener/historical",
+          "request_id": "0a5bd4495ef54d0aac367c1e36ce9e44",
+          "credits_used": 5,
+          "retrieved_at": "2026-09-27T05:10:38.839Z",
+          "response_sha256": "6a38b6dd3ef3d849f6c8fcbc67459a55500803cdef1d27b88514b4fc85cd42f6"
+        },
+        {
+          "purpose": "replay_discovery_1d",
+          "endpoint": "/api/v1beta1/token-screener/historical",
+          "request_id": "0906d1579d4785549c98195e3d5a7d21",
+          "credits_used": 5,
+          "retrieved_at": "2026-09-27T05:10:40.599Z",
+          "response_sha256": "faf9fc91da497cc3e2cb7ef79edf42aeb5e868c0660f0fff5c223a5e39885aed"
+        },
+        {
+          "purpose": "replay_outcome_A",
+          "endpoint": "/api/v1beta1/tgm/historical-token-ohlcv",
+          "request_id": "ce48e95de7e38a7a2fcc462f7a1e0450",
+          "credits_used": 5,
+          "retrieved_at": "2026-09-27T05:10:42.181Z",
+          "response_sha256": "dbb7284bdd2605a13524fcba4831eca11f59696d33841be836c2ecc509b46613"
+        },
+        {
+          "purpose": "replay_outcome_B",
+          "endpoint": "/api/v1beta1/tgm/historical-token-ohlcv",
+          "request_id": "0968ed44ae96786a6100c75b2c271879",
+          "credits_used": 5,
+          "retrieved_at": "2026-09-27T05:10:43.535Z",
+          "response_sha256": "8c6dbb9fea37953561d33c26eccc5bfbb1da8554b0f3c0ad1708a589b733751d"
+        },
+        {
+          "purpose": "replay_outcome_C",
+          "endpoint": "/api/v1beta1/tgm/historical-token-ohlcv",
+          "request_id": "cb710e431dbd3504352e7103e014ba09",
+          "credits_used": 5,
+          "retrieved_at": "2026-09-27T05:10:44.405Z",
+          "response_sha256": "79626fef80dbbcd0857531808ebe1a3ae1f652ee36672706fb44055259540b2f"
+        }
+      ],
+      "data_source": "Nansen API",
+      "generated_by": "npm run generate:replay"
+    }
+  },
+  "receipts": [
+    {
+      "endpoint": "/api/v1beta1/token-screener/historical",
+      "purpose": "replay_discovery_7d",
+      "requestParams": {
+        "chains": [
+          "solana"
+        ],
+        "filters": {
+          "liquidity_usd": {
+            "min": 2000000
+          },
+          "market_cap_usd": {
+            "max": 200000000,
+            "min": 60000000
+          },
+          "token_age_days": {
+            "min": 30
+          }
+        },
+        "to_date": "2026-09-11",
+        "order_by": [
+          {
+            "field": "liquidity",
+            "direction": "DESC"
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "per_page": 50
+        },
+        "timeframe_days": 7,
+        "exclude_sectors": [
+          "Stablecoin"
+        ]
+      },
+      "responseSha256": "6a38b6dd3ef3d849f6c8fcbc67459a55500803cdef1d27b88514b4fc85cd42f6",
+      "retrievedAt": "2026-09-27T05:10:38.839Z",
+      "requestId": "0a5bd4495ef54d0aac367c1e36ce9e44",
+      "creditsUsed": 5
+    },
+    {
+      "endpoint": "/api/v1beta1/token-screener/historical",
+      "purpose": "replay_discovery_1d",
+      "requestParams": {
+        "chains": [
+          "solana"
+        ],
+        "filters": {
+          "liquidity_usd": {
+            "min": 2000000
+          },
+          "market_cap_usd": {
+            "max": 200000000,
+            "min": 60000000
+          },
+          "token_age_days": {
+            "min": 30
+          }
+        },
+        "to_date": "2026-09-11",
+        "order_by": [
+          {
+            "field": "liquidity",
+            "direction": "DESC"
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "per_page": 50
+        },
+        "timeframe_days": 1,
+        "exclude_sectors": [
+          "Stablecoin"
+        ]
+      },
+      "responseSha256": "faf9fc91da497cc3e2cb7ef79edf42aeb5e868c0660f0fff5c223a5e39885aed",
+      "retrievedAt": "2026-09-27T05:10:40.599Z",
+      "requestId": "0906d1579d4785549c98195e3d5a7d21",
+      "creditsUsed": 5
+    },
+    {
+      "endpoint": "/api/v1beta1/tgm/historical-token-ohlcv",
+      "purpose": "replay_outcome_A",
+      "requestParams": {
+        "chain": "solana",
+        "date_from": "2026-09-11T00:00:00Z",
+        "timeframe": "1h",
+        "as_of_date": "2026-09-20",
+        "token_address": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"
+      },
+      "responseSha256": "dbb7284bdd2605a13524fcba4831eca11f59696d33841be836c2ecc509b46613",
+      "retrievedAt": "2026-09-27T05:10:42.181Z",
+      "requestId": "ce48e95de7e38a7a2fcc462f7a1e0450",
+      "creditsUsed": 5
+    },
+    {
+      "endpoint": "/api/v1beta1/tgm/historical-token-ohlcv",
+      "purpose": "replay_outcome_B",
+      "requestParams": {
+        "chain": "solana",
+        "date_from": "2026-09-11T00:00:00Z",
+        "timeframe": "1h",
+        "as_of_date": "2026-09-20",
+        "token_address": "BCNT4t3rv5Hva8RnUtJUJLnxzeFAabcYp8CghC1SmWin"
+      },
+      "responseSha256": "8c6dbb9fea37953561d33c26eccc5bfbb1da8554b0f3c0ad1708a589b733751d",
+      "retrievedAt": "2026-09-27T05:10:43.535Z",
+      "requestId": "0968ed44ae96786a6100c75b2c271879",
+      "creditsUsed": 5
+    },
+    {
+      "endpoint": "/api/v1beta1/tgm/historical-token-ohlcv",
+      "purpose": "replay_outcome_C",
+      "requestParams": {
+        "chain": "solana",
+        "date_from": "2026-09-11T00:00:00Z",
+        "timeframe": "1h",
+        "as_of_date": "2026-09-20",
+        "token_address": "CWZ6BsdnjkDVTGkmL6bGbJXXig6ceef12KvyGQW14cMt"
+      },
+      "responseSha256": "79626fef80dbbcd0857531808ebe1a3ae1f652ee36672706fb44055259540b2f",
+      "retrievedAt": "2026-09-27T05:10:44.405Z",
+      "requestId": "cb710e431dbd3504352e7103e014ba09",
+      "creditsUsed": 5
+    }
+  ]
+}
