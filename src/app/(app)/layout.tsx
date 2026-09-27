@@ -16,8 +16,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           Powered by Nansen API
         </a>
         <p>Past market data, used to measure decisions. Not financial advice.</p>
-        <Link href="/docs" className="font-semibold text-secondary hover:text-cream">
-          How rounds are verified
+        <Link href="/evidence" className="font-semibold text-secondary hover:text-cream">
+          See the Nansen evidence
         </Link>
       </footer>
     </>
