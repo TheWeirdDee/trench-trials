@@ -23,6 +23,18 @@ export interface RoundEvidence {
   checks: { provenance: boolean; commitment: boolean; calculation: boolean; eligibility: boolean };
 }
 
+/** Calls the app made before the call log existed; visible only on the Nansen dashboard. */
+export const BASELINE_CALLS = 21;
+
+/**
+ * The dashboard total these records imply: the earlier calls plus every successful logged
+ * call. Derived, not observed: it stays "pending dashboard confirmation" until the
+ * dashboard itself is checked.
+ */
+export function expectedDashboardTotal(usage: Pick<UsageEvidence, 'successfulCalls'>): number {
+  return BASELINE_CALLS + usage.successfulCalls;
+}
+
 export interface UsageEvidence {
   loggedCalls: number;
   successfulCalls: number;
