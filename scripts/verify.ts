@@ -175,6 +175,29 @@ async function main() {
       console.log(`Today's Daily ${d.utc_date}: ${d.round_id} (${d.eligibility_status})`);
       check(d.eligibility_status === 'approved', `today's Daily ${d.utc_date} points at a round that is not approved`);
     }
+    // Scheduled Dailies: approved, each round at most once, and held out of Replay until after their day.
+    const scheduled = await pool.query<{ utc_date: string; round_id: string; eligibility_status: string; uses: number }>(
+      `SELECT dc.utc_date::text, dc.round_id, r.eligibility_status,
+              (SELECT count(*)::int FROM daily_challenges x WHERE x.round_id = dc.round_id) AS uses
+       FROM daily_challenges dc JOIN rounds r ON r.id = dc.round_id
+       WHERE dc.utc_date > (now() AT TIME ZONE 'UTC')::date ORDER BY dc.utc_date`,
+    );
+    for (const d of scheduled.rows) {
+      console.log(`Scheduled Daily ${d.utc_date}: ${d.round_id} (${d.eligibility_status})`);
+      check(d.eligibility_status === 'approved', `scheduled Daily ${d.utc_date} points at a round that is not approved`);
+      check(d.uses === 1, `round ${d.round_id} is assigned as a Daily ${d.uses} times`);
+    }
+    const replay = await pool.query<{ approved: number; replay_today: number }>(
+      `SELECT count(*)::int AS approved,
+              count(*) FILTER (WHERE NOT EXISTS (
+                SELECT 1 FROM daily_challenges dc WHERE dc.round_id = r.id AND dc.utc_date >= (now() AT TIME ZONE 'UTC')::date
+              ))::int AS replay_today
+       FROM rounds r WHERE r.mode = 'replay' AND r.status IN ('ready', 'resolved') AND r.eligibility_status = 'approved'`,
+    );
+    const cat = replay.rows[0]!;
+    console.log(
+      `Catalog: ${cat.approved} approved Replay round(s); ${cat.replay_today} in Replay today, ${cat.approved - cat.replay_today} held for a Daily`,
+    );
   } else {
     console.log('Eligibility columns not present in this schema: eligibility checks skipped.');
   }
@@ -287,6 +310,43 @@ async function main() {
     `\nTicker Tax recomputed over ${taxValues.length} eligible (first-time, non-timeout, valid) attempt(s): ` +
       `average = ${avgTax === null ? 'n/a (no eligible attempts)' : avgTax.toFixed(4) + 'pp'}`,
   );
+
+  // --- 5. Evidence reconciliation: the Nansen call log against the receipts of playable rounds ---
+  const hasCallLog = await pool.query(
+    `SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'api_call_log' AND column_name = 'nansen_request_id'`,
+  );
+  if (hasCallLog.rowCount && hasEligibility.rowCount) {
+    const usage = await pool.query<{ calls: number; ok: number; credits: number; with_receipt: number; receipt_credits: number }>(
+      `SELECT count(*)::int AS calls, count(*) FILTER (WHERE is_success)::int AS ok, coalesce(sum(credits_used), 0)::int AS credits,
+              count(*) FILTER (WHERE EXISTS (SELECT 1 FROM source_receipts s WHERE s.request_id = l.nansen_request_id))::int AS with_receipt,
+              coalesce(sum(credits_used) FILTER (WHERE EXISTS (SELECT 1 FROM source_receipts s WHERE s.request_id = l.nansen_request_id)), 0)::int
+                AS receipt_credits
+       FROM api_call_log l`,
+    );
+    const u = usage.rows[0]!;
+    console.log(
+      `Call log: ${u.calls} request(s), ${u.ok} successful, ${u.credits} credit(s); ${u.with_receipt} with a round receipt ` +
+        `(${u.receipt_credits} credits), ${u.calls - u.with_receipt} without (${u.credits - u.receipt_credits} credits)`,
+    );
+    // Every receipt of a playable round must match a successful logged call with the same credits.
+    // A fresh clone imports bundles (receipts) but not the operator's billing log: nothing to match.
+    if (u.calls === 0) {
+      console.log('Evidence: the call log is empty here (e.g. a fresh clone of the bundled rounds); receipt reconciliation skipped');
+    } else {
+      const receipts = await pool.query<{ round_id: string; purpose: string; request_id: string | null; matched: boolean }>(
+        `SELECT s.round_id, s.purpose, s.request_id,
+                EXISTS (SELECT 1 FROM api_call_log l WHERE l.nansen_request_id = s.request_id AND l.is_success
+                          AND (s.credits_used IS NULL OR s.credits_used = l.credits_used)) AS matched
+         FROM source_receipts s JOIN rounds r ON r.id = s.round_id
+         WHERE r.mode = 'replay' AND r.eligibility_status = 'approved'`,
+      );
+      for (const x of receipts.rows) {
+        check(x.matched, `receipt ${x.purpose} of approved round ${x.round_id} (request ${x.request_id ?? 'none'}) has no matching logged call`);
+      }
+      const matched = receipts.rows.filter((x) => x.matched).length;
+      console.log(`Evidence: ${receipts.rowCount} receipt(s) on approved Replay rounds, ${matched} matched to a logged call`);
+    }
+  }
 
   console.log(`\n${checks} check(s) run, ${failures} failure(s).`);
   await pool.end();
