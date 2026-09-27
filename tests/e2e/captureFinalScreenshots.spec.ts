@@ -38,7 +38,7 @@ test.describe('Production screenshots', () => {
 
       await page.goto('/');
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-        'Can you read the market before the name changes your mind?',
+        'Can you read the market before the ticker changes your mind?',
       );
       await expect(page.getByTestId('start-button')).toBeInViewport();
       await shot(page, '01-landing');
@@ -96,6 +96,20 @@ test.describe('Production screenshots', () => {
       await page.goto('/live');
       await expect(page.getByTestId('live-empty-state')).toBeVisible();
       await shot(page, '12-live-paused');
+
+      // The canonical round was the only playable round in the test schema: Replay is exhausted,
+      // and says so plainly, with the count and the next step.
+      await page.goto('/play');
+      await expect(page.getByTestId('exhausted-heading')).toHaveText('You’ve completed the current Replay catalog.');
+      await expect(page.getByTestId('replay-exhausted')).toContainText('You’ve played 1 of 1 round.');
+      await expect(page.getByTestId('replay-exhausted')).not.toContainText('fill the gap');
+      await shot(page, '13-replay-exhausted');
+
+      await page.goto('/evidence');
+      await expect(page.getByTestId('nansen-role')).toBeVisible();
+      await expect(page.getByTestId('evidence-round').first()).toBeVisible();
+      await shot(page, '14-evidence');
+      await shot(page, '14-evidence-full', true);
     });
   }
 });
