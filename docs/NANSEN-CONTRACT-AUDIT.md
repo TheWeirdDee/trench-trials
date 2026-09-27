@@ -440,3 +440,5 @@ Zero Nansen calls. `api_call_log` is still at 85 requests / 417 credits.
 | Daily 2026-09-26 | Reassigned from `c3a06918…` to `c5e34c58…` after confirming 0 attempts. The row keeps `prior_round_id`, `replaced_at` and `replacement_reason`. |
 | `npm run verify` | 209 checks, 0 failures: 18 original rounds withdrawn, 2 rebuilt rounds approved, today's Daily approved. |
 | Player-facing state | `/next` serves only the two rebuilds, and not the Daily round on its day. `/api/daily` serves `c5e34c58…`. `/api/live` has nothing playable. |
+| Daily 2026-09-27 | `d2ecc59b…` assigned at 23:58:20 UTC on 2026-09-26, before rollover. Checked after rollover on production: `/api/daily` → `d2ecc59b…`, `/api/rounds/next` → `c5e34c58…`. |
+| Distribution | The two approved rounds are exported to `data/verified-rounds/rebuild-*.json` (derived manifest, request IDs, response hashes; no raw bodies) so a fresh clone can play them with `npm run setup:demo`. |
