@@ -1,4 +1,5 @@
 import { getPool, withTransaction } from '../db';
+import { playerFacingSql } from '../domain/eligibility';
 import type { GeneratedReplayRound } from '../services/replayForge';
 import { insertVerifiedRound } from './verifiedRoundImport';
 
@@ -7,15 +8,28 @@ export interface CatalogEntry {
   tokenAddresses: string[];
 }
 
-/** Every verified Replay/Daily round's cutoff and tokens — the generator plans around them. */
-export async function listCatalog(): Promise<CatalogEntry[]> {
-  const res = await getPool().query<{ cutoff: Date; addresses: string[] }>(
-    `SELECT r.cutoff, array_agg(ra.token_address ORDER BY ra.slot) AS addresses
+export interface ActiveCatalogEntry extends CatalogEntry {
+  roundId: string;
+  /** Player-facing now (approved under the current policy); otherwise a pending candidate. */
+  approved: boolean;
+}
+
+/**
+ * The token inventory players can actually receive, which is what token reuse and
+ * near-duplicates are judged against: approved player-facing rounds, plus pending
+ * candidates from the current Round Forge version. Withdrawn, invalid, under-investigation
+ * and audit-only rounds can never be served, so they are excluded.
+ */
+export async function listActiveCatalog(forgeVersion: number): Promise<ActiveCatalogEntry[]> {
+  const res = await getPool().query<{ id: string; cutoff: Date; addresses: string[]; approved: boolean }>(
+    `SELECT r.id, r.cutoff, array_agg(ra.token_address ORDER BY ra.slot) AS addresses, ${playerFacingSql('r')} AS approved
      FROM rounds r JOIN round_assets ra ON ra.round_id = r.id
      WHERE r.mode IN ('replay', 'daily') AND r.status IN ('ready', 'resolved')
+       AND (${playerFacingSql('r')} OR (r.eligibility_status = 'pending_review' AND r.round_forge_version = $1))
      GROUP BY r.id, r.cutoff`,
+    [forgeVersion],
   );
-  return res.rows.map((r) => ({ cutoff: r.cutoff.toISOString(), tokenAddresses: r.addresses }));
+  return res.rows.map((r) => ({ roundId: r.id, cutoff: r.cutoff.toISOString(), tokenAddresses: r.addresses, approved: r.approved }));
 }
 
 /**
