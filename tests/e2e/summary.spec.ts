@@ -4,7 +4,9 @@ test.describe('History', () => {
   test('a new guest sees the retention label and the honest empty state, and no metric', async ({ page }) => {
     await page.goto('/history');
     await expect(page.getByTestId('history-retention')).toHaveText('Guest history · Saved on this browser');
-    await expect(page.getByTestId('history-retention-note')).toContainText('No account required. Progress is saved in this browser.');
+    await expect(page.getByTestId('history-retention-note')).toContainText(
+      'Your trial history is saved to this browser. Clearing site data or using another device starts a new anonymous profile.',
+    );
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your decisions, before and after the reveal.');
     const empty = page.getByTestId('history-empty-state');
     await expect(empty).toContainText('You have not completed a trial yet. Your first verdict will appear here.');
