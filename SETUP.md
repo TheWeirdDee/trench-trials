@@ -6,12 +6,12 @@ This guide takes a fresh clone to a running production build and a green test su
 
 - Node.js 20 or newer, and npm.
 - A PostgreSQL 15+ database. A Supabase project is what this repo is developed against.
-- Optional: a Nansen API key. It is needed only to generate rounds (`generate:replay`) and for Live. Playing, testing and verifying need no key.
+- Optional: a Nansen API key. It is needed only to generate new rounds and for Live. Playing the included rounds, testing and verifying need no key.
 
 ## 2. Install and configure
 
 ```bash
-npm install
+npm ci
 npx playwright install chromium     # only for the end-to-end suite
 cp .env.example .env.local
 ```
@@ -20,8 +20,8 @@ Fill in `.env.local`:
 
 ```ini
 DATABASE_URL=postgres://…            # see "Choosing the connection string" below
-SESSION_SECRET=…                     # openssl rand -hex 32
-CRON_SECRET=…                        # openssl rand -hex 32; guards /api/internal/*
+SESSION_SECRET=…                     # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+CRON_SECRET=…                        # optional locally; a second random value; guards /api/internal/*
 NANSEN_API_KEY=…                     # optional; only for generation and Live
 ```
 
@@ -43,12 +43,18 @@ TLS is on by default (`DATABASE_SSL=require`). To verify the server certificate,
 ## 3. Database
 
 ```bash
-npm run migrate:up                  # applies migrations/ in order (node-pg-migrate)
-npm run import:verified-round -- --confirm   # round-001: a real, verified historical round; zero Nansen calls
-npm run verify                      # recomputes commitments, returns and winners; checks receipts
+npm run setup:demo                  # dry run: target (no credentials), pending migrations, bundles to import
+npm run setup:demo -- --confirm     # migrate, import and approve the bundled rounds, assign today's Daily, verify
 ```
 
-`npm run verify` should end with `0 failure(s)`.
+`setup:demo` is idempotent and stops on the first error. It imports the bundles in `data/verified-rounds/rebuild-*.json`: the two playable rounds, as frozen, authenticated Nansen-derived evidence with request IDs and response hashes. Raw Nansen responses are not redistributed, and no bundled data is synthetic. It ends by running `npm run verify`, which should report `0 failure(s)`.
+
+The individual steps are also available on their own:
+- `npm run migrate:up -- --confirm` applies migrations; without `--confirm` it only names the target and lists the pending ones.
+- `npm run review:round` records eligibility decisions.
+- `npm run verify` recomputes commitments, returns and winners, and checks eligibility.
+
+`data/verified-rounds/round-001.json` is the historical first round. It is kept as evidence but withdrawn from play, because its signals were read after its cutoff.
 
 ## 4. Run
 
@@ -102,21 +108,21 @@ Live rounds have their own runbook: [docs/LIVE-REAL-RUNBOOK.md](docs/LIVE-REAL-R
 
 ## Deployment
 
-Deploy only with explicit authorization, after the local suite is green on the final tree.
+The live app runs on Vercel, built from `main`: [trench-trials.vercel.app](https://trench-trials.vercel.app).
 
-1. Host: any Node host that runs `npm run build && npm start`, or Vercel.
-2. Set these environment variables on the host:
-   - `DATABASE_URL`, pointing at the **transaction pooler**, with `DB_POOL_MAX=1`–`3` per instance;
-   - `SESSION_SECRET` (required: production has no fallback key);
-   - `CRON_SECRET`;
-   - `NANSEN_API_KEY`, only if Live runs from the deployment.
-3. Run `npm run migrate:up` against the production database. It is a dry run that names the target schema and pending migrations; add `-- --confirm` to apply them. Migration `1790265000000_api_call_log_legacy_nullable` only records a change production already has.
-4. Check after the deploy:
-   - `GET /api/health` returns `{"ok":true,"database":"reachable"}`.
-   - `GET /api/internal/usage` without the secret returns 401.
-   - Responses carry the security headers from `next.config.mjs`: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` and `COOP`.
-   - No response carries `Server-Timing`.
-   - Pages show no development overlay.
+1. Import the repository into Vercel (framework: Next.js; defaults for install and build).
+2. Set these variables for the **Production** environment only, so preview deployments cannot reach the production database:
+   - `DATABASE_URL`: Supabase's **transaction pooler** string (port 6543);
+   - `DB_POOL_MAX`: `2`;
+   - `SESSION_SECRET`: 32+ random bytes. Keep it stable: changing it starts every guest over;
+   - `CRON_SECRET`: a second random value;
+   - leave `NANSEN_API_KEY` unset unless Live must run from the deployment. Without it, the deployment cannot spend credits.
+3. Apply migrations and data from a trusted machine: `npm run migrate:up -- --confirm`, then `npm run setup:demo -- --confirm` (or your own reviewed rounds).
+4. After each deploy, check:
+   - `GET /api/health` returns `{"ok":true,"database":"reachable"}`;
+   - `GET /api/internal/usage` without the secret returns 401;
+   - responses carry the security headers from `next.config.mjs` (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`) and no `Server-Timing`;
+   - no public source maps and no development overlay.
 5. Production builds ship no browser source maps (Next's default). The Nansen key is read only in server code (`src/lib/nansen/client.ts`).
 
 ## Troubleshooting
