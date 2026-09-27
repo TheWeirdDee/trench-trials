@@ -87,11 +87,11 @@ export default function LivePage() {
         <p className="type-lead mt-6">
           {voided
             ? 'No Live Trial is open right now. The most recent one was voided: its committed 24-hour outcome window could not be verified from Nansen data, so no winner was manufactured and nothing was scored.'
-            : 'No Live Trial is open right now. A Live trial opens only when a Nansen token-screener snapshot, taken the moment the round opens, passes the eligibility policy and is committed. Entry then stays open for five minutes before a 24-hour measurement begins.'}
+            : 'No Live Trial is open right now. A Live trial opens only when a fresh Nansen snapshot yields three candidates that qualify. Entry then stays open for five minutes before a 24-hour measurement begins.'}
         </p>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link href="/play" className="btn-primary">
-            Play a verified round
+            Play Replay
           </Link>
           <Link href="/docs#live" className="btn-quiet">
             How Live trials work
