@@ -20,6 +20,7 @@ export function AppHeader({ daily, live }: { daily: boolean; live: boolean }) {
     ...(live ? [{ href: '/live', label: 'Live', testId: 'nav-live', match: (p: string) => p === '/live' }] : []),
     { href: '/history', label: 'History', testId: 'nav-history', match: (p) => p === '/history' },
     { href: '/docs', label: 'Docs', testId: 'nav-docs', match: (p) => p.startsWith('/docs') },
+    { href: '/evidence', label: 'Evidence', testId: 'nav-evidence', match: (p) => p.startsWith('/evidence') },
   ];
 
   return (
