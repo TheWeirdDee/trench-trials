@@ -241,7 +241,7 @@ export async function getFreshRoundId(request: APIRequestContext): Promise<strin
   const res = await request.get('/api/rounds/next');
   const body = await res.json();
   if (!body.available) {
-    throw new Error(`No round available for this test session: ${body.message}`);
+    throw new Error(`No round available for this test session: ${body.reason ?? "unavailable"}`);
   }
   return body.roundId as string;
 }
