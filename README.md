@@ -1,6 +1,6 @@
 # Trench Trials
 
-**Decision-bias training for crypto traders.** Trench Trials measures how revealing a token’s identity changes a trader’s decision.
+**Trench Trials is a Nansen-powered decision-bias training game for crypto traders: compare three anonymous tokens using frozen onchain signals, lock a blind choice, reveal their identities, stick or switch, then see exactly what ticker recognition gained or cost through your Ticker Tax.**
 
 **Live:** [trench-trials.vercel.app](https://trench-trials.vercel.app) · **Evidence:** [/evidence](https://trench-trials.vercel.app/evidence) · **Docs:** [/docs](https://trench-trials.vercel.app/docs) · **Quickstart:** [run it locally in under ten minutes](#run-it-locally-in-under-ten-minutes)
 
