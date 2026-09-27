@@ -63,7 +63,13 @@ function check(condition: boolean, message: string): void {
 }
 
 async function main() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  // DB_SCHEMA (a plain identifier) points the checks at an isolated schema, e.g. a fresh demo copy.
+  const schema = process.env.DB_SCHEMA;
+  if (schema && !/^[a-z_][a-z0-9_]*$/.test(schema)) throw new Error('DB_SCHEMA must be a plain lowercase identifier');
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ...(schema ? { options: `-c search_path=${schema}` } : {}),
+  });
 
   // --- 1. Commitment verification for every round ---
   const rounds = await pool.query<{
