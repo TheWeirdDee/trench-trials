@@ -193,16 +193,89 @@ export async function pickNextReplayRound(guestId: string | null): Promise<Round
   return result.rows[0] ?? null;
 }
 
-/** Today's Daily, only while its round is player-facing: a withdrawn round's Daily is not shown. */
-/** How many Replay rounds are player-facing at all (to tell "none approved" from "all played"). */
-export async function countPlayerFacingReplayRounds(): Promise<number> {
-  const result = await getPool().query<{ n: number }>(
-    `SELECT count(*)::int AS n FROM rounds r
-     WHERE r.mode = 'replay' AND r.status IN ('ready', 'resolved') AND ${playerFacingSql('r')}`,
-  );
-  return result.rows[0]?.n ?? 0;
+export interface PlayerProgress {
+  /** Approved Replay rounds in the catalog, including any serving as a Daily. */
+  catalogSize: number;
+  /** Approved rounds this guest has played (any mode). */
+  completedCount: number;
+  /** Approved rounds not yet played that are held back because they are today's or an upcoming Daily. */
+  reservedForDaily: number;
+  daily: {
+    /** Today's (UTC) Daily exists and is approved. */
+    available: boolean;
+    roundId: string | null;
+    utcDate: string;
+    /** This guest has locked a final choice on today's Daily, or let its window expire. */
+    completed: boolean;
+    /** Next UTC midnight: when today's Daily ends. */
+    resetAtUtc: string;
+    /** A Daily is already assigned for tomorrow (UTC). */
+    nextScheduled: boolean;
+  };
 }
 
+/**
+ * Where a guest stands, in one read-only query: catalog size, rounds played, rounds held
+ * for the Daily, and today's Daily. Explains an empty Replay queue honestly instead of
+ * implying the guest has played rounds they have not. A null guest has played nothing.
+ */
+export async function getPlayerProgress(guestId: string | null): Promise<PlayerProgress> {
+  const res = await getPool().query<{
+    catalog_size: number;
+    completed_count: number;
+    reserved_for_daily: number;
+    today: string;
+    daily_round_id: string | null;
+    daily_completed: boolean;
+    next_scheduled: boolean;
+  }>(
+    `WITH me AS (SELECT id FROM players WHERE $1::text IS NOT NULL AND anon_id = $1),
+          catalog AS (
+            SELECT r.id FROM rounds r
+            WHERE r.mode = 'replay' AND r.status IN ('ready', 'resolved') AND r.repeat_of IS NULL AND ${playerFacingSql('r')}
+          ),
+          played AS (SELECT DISTINCT a.round_id FROM attempts a JOIN me ON me.id = a.player_id),
+          today AS (SELECT (now() AT TIME ZONE 'UTC')::date AS d),
+          daily AS (
+            SELECT dc.round_id FROM daily_challenges dc JOIN rounds r ON r.id = dc.round_id, today
+            WHERE dc.utc_date = today.d AND ${playerFacingSql('r')}
+          )
+     SELECT
+       (SELECT count(*)::int FROM catalog) AS catalog_size,
+       (SELECT count(*)::int FROM catalog c JOIN played p ON p.round_id = c.id) AS completed_count,
+       (SELECT count(*)::int FROM catalog c
+          WHERE NOT EXISTS (SELECT 1 FROM played p WHERE p.round_id = c.id)
+            AND EXISTS (SELECT 1 FROM daily_challenges dc, today WHERE dc.round_id = c.id AND dc.utc_date >= today.d)) AS reserved_for_daily,
+       (SELECT d::text FROM today) AS today,
+       (SELECT round_id FROM daily) AS daily_round_id,
+       EXISTS (
+         SELECT 1 FROM attempts a JOIN me ON me.id = a.player_id JOIN daily ON daily.round_id = a.round_id
+         WHERE a.stage = 'final_locked' OR (a.final_deadline_at IS NOT NULL AND a.final_deadline_at <= now())
+       ) AS daily_completed,
+       EXISTS (
+         SELECT 1 FROM daily_challenges dc JOIN rounds r ON r.id = dc.round_id, today
+         WHERE dc.utc_date = today.d + 1 AND ${playerFacingSql('r')}
+       ) AS next_scheduled`,
+    [guestId],
+  );
+  const row = res.rows[0]!;
+  const utcDate = row.today.slice(0, 10);
+  return {
+    catalogSize: row.catalog_size,
+    completedCount: row.completed_count,
+    reservedForDaily: row.reserved_for_daily,
+    daily: {
+      available: row.daily_round_id !== null,
+      roundId: row.daily_round_id,
+      utcDate,
+      completed: row.daily_completed,
+      resetAtUtc: new Date(Date.parse(`${utcDate}T00:00:00Z`) + 86_400_000).toISOString(),
+      nextScheduled: row.next_scheduled,
+    },
+  };
+}
+
+/** Today's Daily, only while its round is player-facing: a withdrawn round's Daily is not shown. */
 export async function getDailyRoundForToday(): Promise<{ round: RoundRow; utcDate: string } | null> {
   const result = await getPool().query<RoundRow & { utc_date: string | Date }>(
     `SELECT r.*, dc.utc_date::text AS utc_date FROM daily_challenges dc
