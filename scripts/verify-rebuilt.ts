@@ -17,7 +17,7 @@
  * - in database mode: the commitment, the stored assets and receipts, and the lineage.
  *
  * Usage:
- *   npm run verify:rebuilt                     # every round with rebuilt_from set (DB_SCHEMA or public)
+ *   npm run verify:rebuilt                     # every rebuilt round and every approved round (DB_SCHEMA or public)
  *   npm run verify:rebuilt -- --plan plan.json # a rebuild dry-run plan, before insertion
  */
 import { config } from 'dotenv';
@@ -250,12 +250,13 @@ async function main() {
       ...(schema ? { options: `-c search_path=${schema}` } : {}),
     });
     try {
-      // Default: every rebuilt round. --round <id,id,…>: exactly those rounds (e.g. new Round Forge v4 candidates).
+      // Default: every rebuilt round and every approved (playable) round. --round <id,id,…>: exactly those rounds
+      // (e.g. new Round Forge v4 candidates before review).
       const ids = process.argv.includes('--round') ? process.argv[process.argv.indexOf('--round') + 1]!.split(',') : null;
       if (ids && !ids.every((id) => /^[0-9a-f-]{36}$/i.test(id))) throw new Error('--round expects comma-separated uuids');
       const rounds = await pool.query(
         `SELECT r.*, a.eligibility_status AS ancestor_status FROM rounds r LEFT JOIN rounds a ON a.id = r.rebuilt_from
-         WHERE CASE WHEN $1::uuid[] IS NULL THEN r.rebuilt_from IS NOT NULL ELSE r.id = ANY($1::uuid[]) END
+         WHERE CASE WHEN $1::uuid[] IS NULL THEN r.rebuilt_from IS NOT NULL OR r.eligibility_status = 'approved' ELSE r.id = ANY($1::uuid[]) END
          ORDER BY r.cutoff`,
         [ids],
       );
