@@ -5,9 +5,9 @@ import '@fontsource/ibm-plex-mono/600.css';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Trench Trials — Read the market before the name changes your mind',
+  title: 'Trench Trials — Decision-bias training for crypto traders',
   description:
-    'A blind market game powered by Nansen. Compare three real tokens with their identities hidden, lock your read, reveal the tickers, and see what recognition cost you.',
+    'Trench Trials measures how revealing a token’s identity changes a trader’s decision. Choose blind using Nansen onchain signals, see the tickers, then see what recognition gained or cost you.',
   icons: { icon: '/icon.svg' },
 };
 
