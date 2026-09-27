@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Provenance } from '@/lib/api/types';
 import { CommitmentCheck } from './CommitmentCheck';
 
@@ -60,7 +61,12 @@ export function VerificationDetails({
         </dl>
         {provenance && (
           <div>
-            <p className="text-[14px] font-semibold text-secondary">What “verified” means for this round</p>
+            <p className="flex flex-wrap items-baseline justify-between gap-2 text-[14px] font-semibold text-secondary">
+              What was checked
+              <Link href="/evidence" className="link-quiet font-semibold" data-testid="verification-evidence-link">
+                See the Nansen evidence
+              </Link>
+            </p>
             <ul className="mt-2 grid gap-2 text-[14px] text-secondary" data-testid="verification-checks">
               {VERIFICATION_CHECKS.map(([name, text]) => (
                 <li key={name} className="rounded-control bg-raised-2 px-4 py-3">
