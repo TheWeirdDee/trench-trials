@@ -44,9 +44,11 @@ test.describe('Replay — mobile viewport', () => {
     // Verdict stage: real returns, no overflow, controls reachable.
     await expect(page.getByTestId('verdict-headline')).toBeVisible();
     await expect(page.getByTestId('slot-return-A')).toContainText('38.18');
-    const playAgain = page.getByTestId('play-again-button');
-    await playAgain.scrollIntoViewIfNeeded();
-    await expect(playAgain).toBeVisible();
+    // The next step reflects what is really playable: here the canonical round was the only one.
+    const nextSteps = page.getByTestId('next-steps');
+    await nextSteps.scrollIntoViewIfNeeded();
+    await expect(nextSteps.getByTestId('view-history-button')).toBeVisible();
+    await expect(page.getByTestId('play-again-button')).not.toBeAttached();
 
     const noHorizontalScrollAtVerdict = await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth + 1,
