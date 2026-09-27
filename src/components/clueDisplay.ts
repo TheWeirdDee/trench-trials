@@ -2,7 +2,7 @@
  * How the four clue buckets are presented. Every bucket has a text label AND an ordinal
  * meter position, so meaning never depends on color alone (PRD §17).
  * Definitions follow DATA-CONTRACT.md §3: all four come from Nansen's historical token
- * screener at the round's cutoff.
+ * screener, read as of the day before the round's cutoff.
  */
 export type BucketDirection = 'down' | 'neutral' | 'up';
 
@@ -39,11 +39,11 @@ export const CLUE_META = {
   },
   netflowOverLiquidity: {
     title: 'Netflow vs liquidity',
-    hint: 'Net inflow over the day before the cutoff, relative to the liquidity available at the cutoff.',
+    hint: 'Net inflow over the day before the cutoff, relative to the liquidity available just before it.',
   },
   recentMomentum: {
     title: '7-day momentum',
-    hint: 'Price change over the seven days ending at the cutoff.',
+    hint: 'Price change over the seven days ending just before the cutoff.',
   },
 } as const;
 
