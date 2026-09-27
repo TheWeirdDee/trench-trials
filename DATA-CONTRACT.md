@@ -220,7 +220,7 @@ Its reuse window of ±14 days also allowed four pairs of rounds that share two o
 - A **catalog-wide near-duplicate rule**: a new round may not share two or more tokens with any existing round. Selection keeps the most liquid tokens and skips any token that would create such an overlap.
 - **Resumable planning:** a date with any logged `replay_generate:<date>` request is skipped, including rejected dates.
 
-**v3 run (16:53 UTC):** 2 rounds created, using 10 requests and 50 credits: 2026-08-16 (ONYC / ANSEM / SPX) and 2026-08-14 (FARTCOIN / DBR / $WIF). ONYC carries no Nansen sector tag.
+**v3 run (16:53 UTC):** 2 rounds created, using 10 requests and 50 credits: 2026-08-16 (ONYC / ANSEM / SPX) and one more whose tokens and date are withheld because its leak-free rebuild is playable. ONYC carries no Nansen sector tag.
 
 ---
 
