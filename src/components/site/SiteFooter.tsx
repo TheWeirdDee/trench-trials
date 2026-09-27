@@ -8,8 +8,8 @@ export function SiteFooter() {
         <div className="space-y-5">
           <Wordmark />
           <p className="max-w-md text-[15px] leading-relaxed text-secondary">
-            A blind market game built on real, verified Nansen data. Nothing here is financial advice: rounds use past
-            market data to measure decisions, not to recommend trades.
+            Decision-bias training for crypto traders. Nansen selects the tokens, supplies the blind clues and decides
+            the outcome. Not financial advice: rounds use past market data to measure decisions.
           </p>
           <a
             href="https://www.nansen.ai/"
@@ -30,12 +30,23 @@ export function SiteFooter() {
           <Link href="/docs" className="font-semibold text-secondary hover:text-cream">
             Docs
           </Link>
+          <Link href="/evidence" className="font-semibold text-secondary hover:text-cream" data-testid="footer-evidence">
+            Evidence
+          </Link>
           <Link href="/history" className="font-semibold text-secondary hover:text-cream">
             History
           </Link>
-          <Link href="/#faq" className="font-semibold text-secondary hover:text-cream">
+          <Link href="/docs#faq" className="font-semibold text-secondary hover:text-cream">
             FAQ
           </Link>
+          <a
+            href="https://github.com/TheWeirdDee/trench-trials"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-secondary hover:text-cream"
+          >
+            GitHub
+          </a>
         </nav>
       </div>
     </footer>
