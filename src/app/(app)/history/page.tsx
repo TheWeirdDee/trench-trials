@@ -87,10 +87,10 @@ function EntryRow({ entry }: { entry: HistoryEntry }) {
         ) : (
           <p className="text-[15px] text-secondary sm:col-span-2">
             {entry.status === 'void'
-              ? 'The round was invalidated before an outcome could be verified. Nothing was scored.'
+              ? 'The round was invalidated before its outcome could be confirmed. Nothing was scored.'
               : entry.status === 'withdrawn'
-                ? 'This round is not approved for play under the current eligibility review. Nothing from it is scored.'
-                : 'The outcome has not been verified yet.'}
+                ? 'This round was withdrawn from play. Nothing from it is scored.'
+                : 'The outcome is not available yet.'}
           </p>
         )}
       </div>
@@ -134,8 +134,8 @@ export default function HistoryPage() {
       </p>
       <h1 className="type-section mt-4 max-w-4xl">Your decisions, before and after the reveal.</h1>
       <p className="type-body mt-5 max-w-2xl" data-testid="history-retention-note">
-        No account required. Progress is saved in this browser. Another browser or device, or clearing cookies,
-        starts a new History.
+        Your trial history is saved to this browser. Clearing site data or using another device starts a new
+        anonymous profile.
       </p>
 
       {failed && (
@@ -170,7 +170,7 @@ export default function HistoryPage() {
                 testId="stat-completed"
                 label="Completed trials"
                 value={String(summary.eligibleCount)}
-                note="First plays of verified rounds"
+                note="First plays only"
               />
               <Metric
                 testId="stat-blind-accuracy"
