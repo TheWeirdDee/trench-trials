@@ -198,14 +198,18 @@ function verifyRound(label: string, round: RoundLike, receipts: Receipt[]): void
   const fit = (err: (c: Map<number, number>, t: number, s: (typeof series)[number]) => number | null) => {
     let best = { t: 0, err: Infinity };
     let bestAfter = Infinity;
+    let hoursBefore = 0;
     for (let t = cutoff - 47 * HOUR; t <= cutoff + DAY; t += HOUR) {
       const errs = series.map((s) => err(s.closeAt, t, s)).filter((e): e is number => e !== null);
       if (errs.length !== series.length || errs.length === 0) continue;
       const mean = errs.reduce((a, b) => a + b, 0) / errs.length;
       if (mean < best.err) best = { t, err: mean };
       if (t >= cutoff) bestAfter = Math.min(bestAfter, mean);
+      else hoursBefore++;
     }
-    return { ...best, bestAfter };
+    // Evaluable only when the candles cover enough hours before the cutoff to place the
+    // snapshot there at all; otherwise the fit can only land after the cutoff by construction.
+    return { ...best, bestAfter, evaluable: hoursBefore >= 12 };
   };
   const priceFit = fit((c, t, s) => (typeof c.get(t) === 'number' ? Math.abs(c.get(t)! / s.price - 1) : null));
   const changeFit = fit((c, t, s) => {
@@ -217,8 +221,13 @@ function verifyRound(label: string, round: RoundLike, receipts: Receipt[]): void
   console.log(
     `  ${label}: clue snapshot (joint over ${series.length} tokens) — price fits best at cutoff${h(priceFit.t)} (mean err ${(priceFit.err * 100).toFixed(2)}%; best at/after cutoff ${(priceFit.bestAfter * 100).toFixed(2)}%), 1-day change at cutoff${h(changeFit.t)} (mean err ${(changeFit.err * 100).toFixed(2)}pp; best at/after cutoff ${(changeFit.bestAfter * 100).toFixed(2)}pp)`,
   );
+  check(priceFit.evaluable, `${label}: too few candles before the cutoff to locate the clue snapshot`);
   check(priceFit.t < cutoff, `${label}: the clue snapshot's price level fits best at or after the cutoff (${h(priceFit.t)})`);
-  check(changeFit.t < cutoff, `${label}: the clue snapshot's 1-day change fits best at or after the cutoff (${h(changeFit.t)})`);
+  if (changeFit.evaluable) {
+    check(changeFit.t < cutoff, `${label}: the clue snapshot's 1-day change fits best at or after the cutoff (${h(changeFit.t)})`);
+  } else {
+    console.log(`  ${label}: 1-day change fit not evaluable (candles start less than 48h before the cutoff); leakage rests on to_date = cutoff − 1 day and the price-level fit`);
+  }
 
   const max = Math.max(...Object.values(returns));
   const winners = Object.entries(returns).filter(([, r]) => max - r <= TIE).map(([s]) => s).sort();
@@ -241,16 +250,24 @@ async function main() {
       ...(schema ? { options: `-c search_path=${schema}` } : {}),
     });
     try {
+      // Default: every rebuilt round. --round <id,id,…>: exactly those rounds (e.g. new Round Forge v4 candidates).
+      const ids = process.argv.includes('--round') ? process.argv[process.argv.indexOf('--round') + 1]!.split(',') : null;
+      if (ids && !ids.every((id) => /^[0-9a-f-]{36}$/i.test(id))) throw new Error('--round expects comma-separated uuids');
       const rounds = await pool.query(
-        `SELECT r.*, a.eligibility_status AS ancestor_status FROM rounds r JOIN rounds a ON a.id = r.rebuilt_from ORDER BY r.cutoff`,
+        `SELECT r.*, a.eligibility_status AS ancestor_status FROM rounds r LEFT JOIN rounds a ON a.id = r.rebuilt_from
+         WHERE CASE WHEN $1::uuid[] IS NULL THEN r.rebuilt_from IS NOT NULL ELSE r.id = ANY($1::uuid[]) END
+         ORDER BY r.cutoff`,
+        [ids],
       );
-      if (rounds.rowCount === 0) console.log('No rebuilt rounds found.');
+      if (rounds.rowCount === 0) console.log('No matching rounds found.');
       for (const r of rounds.rows) {
         const label = r.id.slice(0, 8);
         const m = r.initial_manifest;
         check(sha256(canonical({ manifest: m, nonce: r.initial_nonce })) === r.initial_commitment_hash, `${label}: commitment mismatch`);
-        check(m.provenance?.rebuilt_from === r.rebuilt_from, `${label}: manifest lineage differs from rebuilt_from`);
-        check(r.ancestor_status !== 'approved', `${label}: ancestor ${r.rebuilt_from} is still approved`);
+        if (r.rebuilt_from) {
+          check(m.provenance?.rebuilt_from === r.rebuilt_from, `${label}: manifest lineage differs from rebuilt_from`);
+          check(r.ancestor_status !== 'approved', `${label}: ancestor ${r.rebuilt_from} is still approved`);
+        }
         const assets = await pool.query(
           `SELECT slot, token_address, entry_price::text, exit_price::text, return_ratio::text FROM round_assets WHERE round_id = $1 ORDER BY slot`,
           [r.id],
@@ -280,7 +297,11 @@ async function main() {
             price: { entry_candle_start: x.entry_candle_start, entry_close: x.entry_price, exit_candle_start: x.exit_candle_start, exit_close: x.exit_price },
           })),
         };
-        console.log(`Rebuilt round ${r.id} (from ${r.rebuilt_from}, eligibility ${r.eligibility_status}, ancestor ${r.ancestor_status})`);
+        console.log(
+          r.rebuilt_from
+            ? `Rebuilt round ${r.id} (from ${r.rebuilt_from}, eligibility ${r.eligibility_status}, ancestor ${r.ancestor_status})`
+            : `Round ${r.id} (forge v${r.round_forge_version}, eligibility ${r.eligibility_status})`,
+        );
         verifyRound(label, round, rec.rows);
       }
     } finally {
