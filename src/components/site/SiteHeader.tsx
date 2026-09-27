@@ -7,8 +7,9 @@ import { Wordmark } from '@/components/brand/BrandMark';
 const LINKS = [
   { href: '/#how-it-works', label: 'How it works' },
   { href: '/#nansen', label: 'Why Nansen' },
-  { href: '/#faq', label: 'FAQ' },
+  { href: '/evidence', label: 'Evidence' },
   { href: '/docs', label: 'Docs' },
+  { href: '/docs#faq', label: 'FAQ' },
 ];
 
 /** Public site navigation. Daily and Live are not promised here. */
