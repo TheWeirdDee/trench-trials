@@ -23,6 +23,7 @@ const CANONICAL_ROUND_IDS = [
   'be497aab-d46e-4d40-a5fb-3fbf0f0d29ca', // verified Replay round
   'df397565-caab-4208-8737-9b1d208177d7', // invalid Live audit round
 ];
+const ELIGIBILITY_COLUMNS = ['eligibility_status', 'eligibility_policy_version', 'eligibility_reviewed_at', 'eligibility_note'];
 const COPIED_TABLES: Array<{ table: string; key: 'id' | 'round_id' }> = [
   { table: 'rounds', key: 'id' },
   { table: 'round_assets', key: 'round_id' },
@@ -82,8 +83,11 @@ async function main() {
             [a, b, table],
           )
         ).rows.map((r) => r.column_name);
-      const testOnly = ['created_at', ...(await only(SCHEMA, 'public'))];
-      const publicOnly = ['created_at', ...(await only('public', SCHEMA))];
+      // Eligibility is a reviewed, per-schema decision: step 3 approves the Replay copy in the
+      // test schema, while production may withdraw it. Everything else must match exactly.
+      const perSchema = table === 'rounds' ? ELIGIBILITY_COLUMNS : [];
+      const testOnly = ['created_at', ...perSchema, ...(await only(SCHEMA, 'public'))];
+      const publicOnly = ['created_at', ...perSchema, ...(await only('public', SCHEMA))];
       const diff = await client.query<{ n: number }>(
         `SELECT count(*)::int AS n FROM (
            (SELECT to_jsonb(t) - $2::text[] AS r FROM public.${table} t WHERE ${key} = ANY($1::uuid[])
