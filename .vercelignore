@@ -10,3 +10,7 @@ playwright-report/
 .next/
 node_modules/
 tsconfig.tsbuildinfo
+# Owner's demo-video work: the Remotion project and rendered videos stay local.
+/remotion-video/
+/trench-trials-demo.mp4
+/public/trench-trials-demo.mp4
