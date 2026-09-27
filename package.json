@@ -21,6 +21,7 @@
     "generate:replay": "tsx scripts/generate-replay.ts",
     "assign:daily": "tsx scripts/assign-daily.ts",
     "review:round": "tsx scripts/review-round.ts",
+    "publish:rounds": "tsx scripts/publish-rounds.ts",
     "rebuild:round": "tsx scripts/rebuild-round.ts",
     "verify:rebuilt": "tsx scripts/verify-rebuilt.ts",
     "setup:demo": "tsx scripts/setup-demo.ts",
