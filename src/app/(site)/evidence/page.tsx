@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { CopyValue } from '@/components/site/CopyValue';
-import { getEvidence, type RoundEvidence } from '@/lib/repo/evidence';
+import { BASELINE_CALLS, expectedDashboardTotal, getEvidence, type RoundEvidence } from '@/lib/repo/evidence';
 
 export const metadata = {
   title: 'Nansen evidence · Trench Trials',
@@ -14,8 +14,6 @@ export const dynamic = 'force-dynamic';
 const REPO = 'https://github.com/TheWeirdDee/trench-trials';
 /** The hackathon's qualifying threshold for real Nansen API calls. */
 const REQUIRED_CALLS = 100;
-/** Calls the app made before the call log existed; visible only on the Nansen dashboard. */
-const BASELINE_CALLS = 21;
 /** Nansen's official announcement of the 100-call requirement. Set when the link is confirmed. */
 const REQUIREMENT_ANNOUNCEMENT_URL = '';
 
@@ -157,7 +155,7 @@ function RoundCard({ round }: { round: RoundEvidence }) {
 
 export default async function EvidencePage() {
   const { rounds, usage } = await getEvidence();
-  const expected = BASELINE_CALLS + usage.successfulCalls;
+  const expected = expectedDashboardTotal(usage);
 
   return (
     <div className="page py-12 sm:py-16">
@@ -251,10 +249,10 @@ export default async function EvidencePage() {
         <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="usage">
           {[
             ['Requirement', `${REQUIRED_CALLS} calls`],
-            ['Earlier app calls (dashboard only)', String(BASELINE_CALLS)],
-            ['Logged build calls', `${usage.loggedCalls} (${usage.successfulCalls} successful)`],
+            ['Calls before application logging (dashboard only)', String(BASELINE_CALLS)],
+            ['Requests logged by the application', `${usage.loggedCalls} (${usage.successfulCalls} successful)`],
             ['Expected dashboard total', `${expected} — pending dashboard confirmation`],
-            ['Credits spent (logged)', String(usage.creditsUsed)],
+            ['Credits logged', String(usage.creditsUsed)],
             ['Balance after the last call', usage.creditsRemaining === null ? '—' : String(usage.creditsRemaining)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-card bg-raised p-5">
@@ -282,10 +280,12 @@ export default async function EvidencePage() {
         <h2 id="rounds-heading" className="type-title">
           Playable rounds
         </h2>
-        <p className="type-body mt-3 max-w-3xl">
-          Each round below was built from the Nansen responses listed, sealed before play, and checked again when this
-          page loaded.
-        </p>
+        {rounds.length > 0 && (
+          <p className="type-body mt-3 max-w-3xl" data-testid="evidence-round-count">
+            {rounds.length === 1 ? 'One round is' : `${rounds.length} rounds are`} approved for play. Each was built from
+            the Nansen responses listed, sealed before play, and checked again when this page loaded.
+          </p>
+        )}
         <div className="mt-6 grid gap-5">
           {rounds.length === 0 ? (
             <p className="type-body">No round is open for play right now.</p>
