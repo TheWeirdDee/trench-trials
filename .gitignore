@@ -65,3 +65,9 @@ logs/
 *.dump
 *.p12
 *.pfx
+
+# --- Owner's demo-video work: kept locally, never committed or deployed ---
+# Remotion project (sources, 497 MB of dependencies, recordings, renders) and the rendered videos.
+/remotion-video/
+/trench-trials-demo.mp4
+/public/trench-trials-demo.mp4
