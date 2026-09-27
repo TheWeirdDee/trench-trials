@@ -1,5 +1,6 @@
 /**
- * Generates verified historical Replay rounds from real Nansen data — Round Forge v3
+ * Generates historical Replay rounds from real Nansen data (Round Forge v4). New rounds are
+ * stored as pending review and become playable only after an eligibility review
  * (src/lib/services/replayForge.ts).
  *
  * Without --confirm this is a dry run: it prints the planned cutoffs, the call and
@@ -35,6 +36,7 @@ import {
   PLANNED_CREDITS_PER_CALL,
   planReplayGeneration,
   policyForCutoff,
+  REPLAY_FORGE_VERSION,
   REPLAY_ROUND_MAX_CALLS,
   ReplayForgeRejection,
 } from '../src/lib/services/replayForge';
@@ -75,9 +77,9 @@ async function main() {
     maxCredits: intArg('max-credits'),
   });
 
-  console.log('Replay generation plan — Round Forge v3');
+  console.log(`Replay generation plan — Round Forge v${REPLAY_FORGE_VERSION}`);
   console.log(`  database schema:     ${dbSchema() ?? 'public'}`);
-  console.log(`  existing catalog:    ${catalog.length} verified round(s)`);
+  console.log(`  existing catalog:    ${catalog.length} stored round(s), approved or withdrawn (all count for token reuse and near-duplicates)`);
   console.log(`  already attempted:   ${attempted.length ? attempted.sort().join(', ') : 'none'} (skipped)`);
   console.log(`  rounds requested:    ${count}`);
   console.log(`  per round:           2 × POST ${HISTORICAL_SCREENER_PATH} (7d, 1d)`);
