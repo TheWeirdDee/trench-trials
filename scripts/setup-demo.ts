@@ -8,8 +8,9 @@
  *   1. validates the environment (DATABASE_URL is required; NANSEN_API_KEY is not);
  *   2. names the database target (schema and a host fingerprint, never credentials);
  *   3. applies pending migrations;
- *   4. imports the verified round bundles in data/verified-rounds/rebuild-*.json — frozen,
- *      authenticated Nansen-derived rounds, not synthetic data;
+ *   4. imports every verified round bundle in data/verified-rounds/ (rebuild-*.json and
+ *      forge-v4-*.json: the full approved catalog) — frozen, authenticated Nansen-derived
+ *      rounds, not synthetic data;
  *   5. approves them under the current eligibility policy;
  *   6. assigns one as today's (UTC) Daily when no Daily exists;
  *   7. runs npm run verify;
@@ -22,7 +23,6 @@ dotenv.config({ path: '.env.local' });
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import runner from 'node-pg-migrate';
 import { dbSchema, getPool, withTransaction } from '../src/lib/db';
@@ -30,41 +30,19 @@ import { ELIGIBILITY_POLICY_VERSION } from '../src/lib/domain/assetPolicy';
 import { isPlayerFacing } from '../src/lib/domain/eligibility';
 import { setRoundEligibility } from '../src/lib/repo/eligibility';
 import { assignDailyRound } from '../src/lib/repo/rounds';
-import { insertVerifiedRound, type VerifiedRound } from '../src/lib/repo/verifiedRoundImport';
-
-const BUNDLE_DIR = join('data', 'verified-rounds');
-
-interface Bundle {
-  format: string;
-  round: VerifiedRound;
-  receipts: Array<{
-    endpoint: string;
-    purpose: string;
-    requestParams: Record<string, unknown>;
-    responseSha256: string;
-    retrievedAt: string;
-    requestId: string | null;
-    creditsUsed: number | null;
-  }>;
-}
+import { loadVerifiedBundles, type VerifiedBundle } from '../src/lib/repo/verifiedBundles';
+import { insertVerifiedRound } from '../src/lib/repo/verifiedRoundImport';
 
 function fail(message: string): never {
   throw new Error(`setup:demo stopped: ${message}`);
 }
 
-function loadBundles(): Array<{ file: string; bundle: Bundle }> {
-  const files = readdirSync(BUNDLE_DIR).filter((f) => /^rebuild-.*\.json$/.test(f)).sort();
-  if (files.length === 0) fail(`no bundles found in ${BUNDLE_DIR}`);
-  return files.map((file) => {
-    const bundle = JSON.parse(readFileSync(join(BUNDLE_DIR, file), 'utf8')) as Bundle;
-    if (bundle.format !== 'trench-trials.verified-round-bundle/1') fail(`${file}: unknown bundle format`);
-    if (!bundle.round?.round_id || bundle.round.assets?.length !== 3) fail(`${file}: malformed round`);
-    if (!Array.isArray(bundle.receipts) || bundle.receipts.length === 0) fail(`${file}: no receipts`);
-    for (const r of bundle.receipts) {
-      if (!r.requestId || !/^[0-9a-f]{64}$/.test(r.responseSha256)) fail(`${file}: a receipt lacks a request ID or SHA-256`);
-    }
-    return { file, bundle };
-  });
+function loadBundles(): Array<{ file: string; bundle: VerifiedBundle }> {
+  try {
+    return loadVerifiedBundles();
+  } catch (err) {
+    fail(err instanceof Error ? err.message : String(err));
+  }
 }
 
 async function main() {
@@ -83,7 +61,8 @@ async function main() {
   console.log(`Target: schema "${schema}", host fingerprint ${createHash('sha256').update(host).digest('hex').slice(0, 12)}`);
   console.log(`NANSEN_API_KEY: ${process.env.NANSEN_API_KEY ? 'set (not needed for this setup)' : 'not set (not needed for this setup)'}`);
   console.log(`SESSION_SECRET: ${process.env.SESSION_SECRET ? 'set' : 'not set: development uses a temporary key; production requires one'}`);
-  console.log(`Bundles: ${bundles.map((b) => `${b.file} (${b.bundle.round.assets.map((a) => a.token_symbol).join('/')})`).join(', ')}`);
+  // File names and receipt counts only: token names would spoil the rounds for whoever runs this.
+  console.log(`Bundles: ${bundles.length} (${bundles.map((b) => `${b.file}, ${b.bundle.receipts.length} receipts`).join('; ')})`);
 
   if (!confirm) {
     console.log('\nDry run: nothing written. Re-run with --confirm to migrate, import, approve, assign the Daily and verify.');
