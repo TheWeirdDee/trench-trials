@@ -97,7 +97,7 @@ test.describe('Accessibility', () => {
     await page.keyboard.press('Enter');
 
     await expect(page.getByTestId('verdict-headline')).toContainText('You kept your blind choice: Slot B.');
-    await tabTo(page, page.getByRole('link', { name: 'See your History' }));
+    await tabTo(page, page.getByTestId('view-history-button'));
     await page.keyboard.press('Enter');
 
     await expect(page).toHaveURL(/\/history$/);
