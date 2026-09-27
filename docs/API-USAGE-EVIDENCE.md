@@ -6,11 +6,13 @@ What the product has requested from Nansen, and how the three records reconcile.
 
 | Measure | Value | Source |
 | --- | --- | --- |
-| Dashboard baseline before this session | 21 successful calls, 1,010 credits | Nansen dashboard, as you reported it before spending |
+| Qualifying requirement | 100 real API calls | Nansen’s updated hackathon requirement |
+| Dashboard baseline before this session | 21 successful calls, 1,010 credits | Nansen dashboard, as reported by the owner before spending |
 | Real requests on 2026-09-26 | **85**: all HTTP 200, 0 failures, 0 retries, 0 cache hits | `api_call_log` |
 | Credits used on 2026-09-26 | **417** | `api_call_log.credits_used`, from the `x-nansen-credits-used` header |
 | Balance after the last request | **593** (1,010 − 417 ✓) | `x-nansen-credits-remaining` on the last response |
-| Expected dashboard total | **106** successful calls (21 + 85) | derived; the dashboard is the final authority |
+| Expected dashboard total | **106** successful calls (21 + 85), pending dashboard confirmation | derived; the dashboard is the final authority |
+| Calls made since | **0**: the leak-free rebuilds, bundles and Daily assignments used only preserved responses | `api_call_log` still holds 85 rows |
 | Authorized ceiling | 90 attempts / 450 credits | Live 7 / 35 plus catalog 83 / 415 |
 | Used against the ceiling | 85 attempts / 417 credits. No further spending is authorized. | |
 
@@ -49,6 +51,7 @@ Nothing is authorized. The 2026-09-26 audit ([NANSEN-CONTRACT-AUDIT.md](NANSEN-C
 
 ## How to re-check at any time
 
+0. Open the public [Evidence page](https://trench-trials.vercel.app/evidence): it reads these totals live from `api_call_log` and lists each playable round’s request IDs and response hashes.
 1. Call `GET /api/internal/usage` with `x-internal-secret: $CRON_SECRET`. This needs `CRON_SECRET` to be set.
 2. Or run the read-only queries this document's figures came from: `api_call_log` grouped by `purpose`, and `source_receipts` joined to `api_call_log` on `request_id`.
 3. Run `npm run verify`, which recomputes every commitment and return.
