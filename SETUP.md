@@ -47,11 +47,12 @@ npm run setup:demo                  # dry run: target (no credentials), pending 
 npm run setup:demo -- --confirm     # migrate, import and approve the bundled rounds, assign today's Daily, verify
 ```
 
-`setup:demo` is idempotent and stops on the first error. It imports the bundles in `data/verified-rounds/rebuild-*.json`: the two playable rounds, as frozen, authenticated Nansen-derived evidence with request IDs and response hashes. Raw Nansen responses are not redistributed, and no bundled data is synthetic. It ends by running `npm run verify`, which should report `0 failure(s)`.
+`setup:demo` is idempotent and stops on the first error. It imports every bundle in `data/verified-rounds/` (`rebuild-*.json` and `forge-v4-*.json`): all six playable rounds, as frozen, authenticated Nansen-derived evidence with request IDs and response hashes. Raw Nansen responses are not redistributed, and no bundled data is synthetic. It ends by running `npm run verify`, which should report `0 failure(s)` and `Catalog: 6 approved Replay round(s)`. The dry run lists bundle files and receipt counts only; it never prints token names, so it does not spoil the rounds.
 
 The individual steps are also available on their own:
 - `npm run migrate:up -- --confirm` applies migrations; without `--confirm` it only names the target and lists the pending ones.
 - `npm run review:round` records eligibility decisions.
+- `npm run publish:rounds -- --plan plan.json --actor <name>` approves or rejects reviewed candidates and schedules a Daily in one transaction, only from the exact catalog state the plan expects; dry run unless given `--confirm`.
 - `npm run verify` recomputes commitments, returns and winners, and checks eligibility.
 
 `data/verified-rounds/round-001.json` is the historical first round. It is kept as evidence but withdrawn from play, because its signals were read after its cutoff.
