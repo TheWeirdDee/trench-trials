@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Provenance, RoundMeta, Slot, VerdictData } from '@/lib/api/types';
+import { NextSteps } from './NextSteps';
 import { VerificationDetails, formatUtc } from './VerificationDetails';
 
 function pct(n: number): string {
@@ -37,12 +38,15 @@ export function VerdictView({
   round,
   provenance,
   isLive,
+  context,
   children,
 }: {
   verdict: VerdictData;
   round: RoundMeta;
   provenance?: Provenance;
   isLive: boolean;
+  /** Where the round was played from; decides the next-step actions. */
+  context: 'replay' | 'daily' | 'live';
   children?: React.ReactNode;
 }) {
   const { headline, detail } = verdictCopy(verdict);
@@ -54,7 +58,14 @@ export function VerdictView({
     <div className="grid gap-8" data-testid="verdict-banner">
       <section className="rounded-panel bg-burgundy-surface p-6 sm:p-10">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="eyebrow text-cream/80">{isLive ? 'Live round resolved' : 'Verified verdict'}</span>
+          <span className="eyebrow text-cream/80">{isLive ? 'Live round resolved' : 'Verdict'}</span>
+          <Link
+            href="/evidence"
+            className="rounded-full bg-canvas/40 px-3 py-1 text-[14px] font-bold text-cream/85 hover:text-cream"
+            data-testid="verified-badge"
+          >
+            Verified ✓
+          </Link>
           <span
             className={`rounded-full px-3 py-1 text-[14px] font-bold ${
               verdict.finalWasWinner ? 'bg-gain/15 text-gain' : 'bg-canvas/50 text-cream/85'
@@ -117,14 +128,7 @@ export function VerdictView({
         </ul>
       </section>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Link href="/play" className="btn-primary" data-testid="play-again-button">
-          Play another round
-        </Link>
-        <Link href="/history" className="btn-quiet">
-          See your History
-        </Link>
-      </div>
+      <NextSteps context={context} />
 
       {children}
 
