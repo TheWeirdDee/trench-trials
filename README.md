@@ -93,9 +93,9 @@ The server decides what each stage may contain: blind responses carry only slot 
 ## Real API usage and evidence
 
 - **Requirement:** 100 real Nansen API calls.
-- **Logged build calls:** 85 (417 credits), each with its request ID and response SHA-256.
-- **Earlier app calls:** 21, visible only on the Nansen dashboard.
-- **Expected dashboard total:** 106, pending dashboard confirmation.
+- **Requests logged by the application:** 116 (572 credits), each with its request ID and response SHA-256. Balance after the last call: 448 credits.
+- **Earlier app calls:** 21, made before application logging existed; visible only on the Nansen dashboard.
+- **Expected dashboard total:** 137 (21 + 116), pending dashboard confirmation.
 
 The public [Evidence page](https://trench-trials.vercel.app/evidence) lists every playable round’s request IDs, response hashes and commitment, and re-checks them on each load. Full reconciliation: [docs/API-USAGE-EVIDENCE.md](docs/API-USAGE-EVIDENCE.md).
 
@@ -108,18 +108,18 @@ git clone https://github.com/TheWeirdDee/trench-trials.git
 cd trench-trials
 npm ci
 cp .env.example .env.local        # set DATABASE_URL and SESSION_SECRET (see below)
-npm run setup:demo -- --confirm   # migrate, import the verified rounds, approve, assign today’s Daily, verify
+npm run setup:demo -- --confirm   # migrate, import the six verified rounds, approve, assign today’s Daily, verify
 npm run build && npm start        # http://localhost:3000
 ```
 
-Generate `SESSION_SECRET` with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Measured from a clean copy to a playable app: **2 minutes 14 seconds**.
+Generate `SESSION_SECRET` with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Measured from a clean copy to a playable app with all six rounds: **2 minutes 52 seconds** (install 49 s, setup 42 s, build 69 s, start 12 s).
 
-`setup:demo` imports the bundles in [`data/verified-rounds/`](data/verified-rounds): the two playable rounds, as frozen, authenticated Nansen-derived evidence. Each holds the derived round manifest, request IDs and response hashes; raw Nansen responses are not redistributed. **No bundled data is synthetic.** A Nansen key is required only to generate new Replay, Daily or Live data. More: [SETUP.md](SETUP.md).
+`setup:demo` imports the bundles in [`data/verified-rounds/`](data/verified-rounds): all six playable rounds, as frozen, authenticated Nansen-derived evidence. Each holds the derived round manifest, request IDs and response hashes; raw Nansen responses are not redistributed. **No bundled data is synthetic.** A Nansen key is required only to generate new Replay, Daily or Live data. More: [SETUP.md](SETUP.md).
 
 ## Verification and tests
 
 ```bash
-npm run verify           # recompute every commitment and return, and check eligibility
+npm run verify           # recompute every commitment and return, check eligibility and the Daily schedule, reconcile receipts with the call log
 npm run typecheck
 npm run test:db:setup    # once: prepare the isolated tt_test schema
 npm test                 # unit and integration tests, always in tt_test
@@ -140,7 +140,7 @@ Tests never touch production rows and never reach Nansen. Every script that writ
 
 ## Current scope
 
-- Two playable rounds are included; more are added only when built from Nansen data and approved.
+- Six playable rounds are included: two leak-free offline rebuilds and four Round Forge v4 rounds. More are added only when built from Nansen data, independently verified and approved.
 - Live is withheld until a candidate round passes the eligibility policy.
 - History is a browser-local anonymous profile; there are no accounts.
 - Historical inputs are frozen for reproducibility.
